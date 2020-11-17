@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phân quyền người dùng -->
+<odoo>
+    <data noupdate="0">
+
+        <record id="group_scrum_product_owner" model="res.groups">
+            <field name="name">Product Owner</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record model="ir.rule" id="scrum_backlog_rule">
+            <field name="name">Project: multi-company</field>
+            <field name="model_id" ref="model_scrum_backlog"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[
+                                            ('name', '!=', 'root')
+                                        ]</field>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+    </data>
+</odoo>

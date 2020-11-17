@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM: SCRUM PROJECT -->
+    <record id="scrum_project_view_form" model="ir.ui.view">
+        <field name="name">scrum_project_view_form</field>
+        <field name="model">project.project.scrum</field>
+        <field name="arch" type="xml">
+            <form string="Project Form">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE: SCRUM PROJECT -->
+    <record id="scrum_project_view_tree" model="ir.ui.view">
+        <field name="name">scrum_project_view_tree</field>
+        <field name="model">project.project.scrum</field>
+        <field name="arch" type="xml">
+            <tree string="Project Tree">
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- ACTION: SCRUM PROJECT -->
+    <record id="scrum_project_action_list" model="ir.actions.act_window">
+        <field name="name">Project</field>
+        <field name="res_model">project.project.scrum</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Mời bạn tạo Project</p>
+        </field>
+    </record>
+
+    <!-- FORM: PRODUCT BACKLOG -->
+    <!-- Cấu trúc chuẩn id: Tên Module.Tên Model_view_Tên Type View -->
+    <record id="product_backlog_view_form" model="ir.ui.view">
+        <field name="name">product_backlog_view_form</field>
+        <field name="model">project.project.backlog</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                        </group>
+                        <group>
+                            <field name="description" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE: PRODUCT BACKLOG -->
+    <record id="product_backlog_view_tree" model="ir.ui.view">
+        <field name="name">product_backlog_view_tree</field>
+        <field name="model">project.project.backlog</field>
+        <!-- <field name="mode">primary</field>
+        <field name="inherit_id" ref="project.view_project"></field> -->
+        <field name="arch" type="xml">
+            <tree string="Item Tree">
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- ACTION: PRODUCT BACKLOG -->
+    <record id="product_backlog_action_list" model="ir.actions.act_window">
+        <field name="name">Product Backlog</field>
+        <field name="res_model">project.project.backlog</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Mời bạn tạo Item</p>
+        </field>
+    </record>
+
+
+    <!-- Menu cấp 1 -->
+    <menuitem id="project_main_view_menu" name="Ứng dụng Quản trị Dự án" web_icon="scrum,static/src/img/scrum.png" />
+    <!-- Menu cấp 2: SCRUM PROJECT -->
+    <menuitem id="scrum_project_view_menu" name="Project" parent="project_main_view_menu" action="scrum_project_action_list" sequence="1" />
+    <!-- Menu cấp 2: PRODUCT PROJECT -->
+    <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="project_main_view_menu" action="product_backlog_action_list" sequence="2" />
+</odoo>
