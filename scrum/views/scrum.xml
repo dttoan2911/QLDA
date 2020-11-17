@@ -1,19 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- <record id="project_project_inherit" model="ir.ui.view">
+    <record id="view_project_sprint_kanban" model="ir.ui.view">
         <field name="name">project.project.inherit</field>
         <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.edit_project"></field>
+        <field name="inherit_id" ref="project.view_project_kanban"></field>
+        <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <field name="partner_id" position="after">
-                <field name="item_name" />
+            <field name="rating_status" position="after">
+                <field name="sprint_count"/>
             </field>
+            <xpath expr="//a[hasclass('o_project_kanban_box')]" position="before">
+                <a class="o_project_kanban_box" name="127" type="action">
+                    <div>
+                        <span class="o_value"><t t-esc="record.sprint_count.value"/></span>
+                        <span class="o_label">Sprints</span>
+                    </div>
+                </a>
+            </xpath>
+            <!-- <xpath expr="//field[@name='partner_id']" position="after">
+            <field name="partner_id" position="after">
+
+                
+                <field name="item_name" />
+            </field> -->
         </field>
-    </record> -->
+    </record>
 
     <!-- form view of the Scrum Project model -->
-    <record id="scrum_project_view_form" model="ir.ui.view">
+    <!-- <record id="scrum_project_view_form" model="ir.ui.view">
         <field name="name">scrum.project.view.form</field>
         <field name="model">scrum.project</field>
         <field name="arch" type="xml">
@@ -27,25 +42,31 @@
                 </sheet>
             </form>
         </field>
-    </record>
+    </record> -->
 
     <!-- tree view of the Scrum Project model -->
-    <record id="scrum_project_view_tree" model="ir.ui.view">
+    <!-- <record id="scrum_project_view_tree" model="ir.ui.view">
         <field name="name">scrum.project.view.tree</field>
-        <field name="model">scrum.project</field>
+        <field name="model">s.project</field>
         <field name="arch" type="xml">
             <tree string="Projects">
                 <field name="name" />
             </tree>
         </field>
-    </record>
+    </record> -->
 
     <!-- action of the Scrum Project Menu -->
     <record id="action_scrum_project" model="ir.actions.act_window">
-        <field name="name">Project</field>
-        <field name="res_model">scrum.project</field>
+        <field name="name">Scrum Project</field>
+        <field name="res_model">project.project</field>
         <field name="view_type">form</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_project_sprint_kanban')}),
+
+        ]"/>
+        <field name="domain">[('is_scrum', '=', True)]</field>
+        <field name="context">{'default_is_scrum': True}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Mời bạn tạo Project
@@ -63,17 +84,20 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="t_id" readonly="1" />
+                            <field name="id" readonly="1" />
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="t_name" class="o_project_name oe_inline" placeholder="e.g. Mời bạn nhập tên Task" />
-                            <field name="t_workflow" />
-                            <field name="t_description" />
-                            <field name="t_storypoint" />
-                            <field name="t_attachment" />
-                            <field name="t_sprint_id">
+
+                            <field name="name" class="o_project_name oe_inline" placeholder="e.g. Mời bạn nhập tên Task" />
+                            <field name="workflow" />
+                            <field name="description" />
+                            <field name="storypoint" />
+                            <field name="attachment" />
+                            <field name="sprint_id">
+
+
                                 <field name="sprint_id" />
                                 <field name="product_backlog_id" invisible="1"/>
                             </field>
@@ -95,10 +119,10 @@
         <field name="model">product.backlog</field>
         <field name="arch" type="xml">
             <tree string="Backlogs">
-                <field name="t_id" />
-                <field name="t_name" />
-                <field name="t_storypoint" />
-                <field name="t_workflow" />
+                <field name="id" />
+                <field name="name" />
+                <field name="storypoint" />
+                <field name="workflow" />
             </tree>
         </field>
     </record>
@@ -109,15 +133,15 @@
         <field name="model">product.backlog</field>
         <field name="arch" type="xml">
             <search string="Search Product Backlog">
-                <field name="t_name" filter_domain="['|',('t_name','ilike',self),('t_id','ilike',self)]" />
-                <field name="t_id" />
-                <field name="t_name" />
+                <field name="name" filter_domain="['|',('name','ilike',self),('id','ilike',self)]" />
+                <field name="id" />
+                <field name="name" />
                 <separator />
-                <filter string="Draft" name="draft" domain="[('t_workflow','=','draft')]" />
-                <filter string="Confirm" name="confirm" domain="[('t_workflow','=','confirm')]" />
-                <filter string="Done" name="done" domain="[('t_workflow','=','done')]" />
+                <filter string="Draft" name="draft" domain="[('workflow','=','draft')]" />
+                <filter string="Confirm" name="confirm" domain="[('workflow','=','confirm')]" />
+                <filter string="Done" name="done" domain="[('workflow','=','done')]" />
                 <group expand="0" string="Group By">
-                    <filter string="Tình trạng Task" name="t_workflow" context="{'group_by':'t_workflow'}" />
+                    <filter string="Tình trạng Task" name="workflow" context="{'group_by':'workflow'}" />
                 </group>
             </search>
         </field>
@@ -146,17 +170,17 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="s_id" readonly="1" />
+                            <field name="id" readonly="1" />
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="s_sprint_goal" />
-                            <field name="s_define_of_done" />
+                            <field name="sprint_goal" />
+                            <field name="define_of_done" />
                         </group>
                         <group>
-                            <field name="s_start_date" />
-                            <field name="s_end_date" />
+                            <field name="start_date" />
+                            <field name="end_date" />
                         </group>
                         <field name="sprint_list">
                             <tree editable="bottom">
@@ -181,7 +205,7 @@
         <field name="model">sprint.sprint</field>
         <field name="arch" type="xml">
             <tree string="Sprints">
-                <field name="s_id" />
+                <field name="id" />
             </tree>
         </field>
     </record>
@@ -202,7 +226,7 @@
 
     <menuitem id="main_menu" name="Ứng dụng Quản trị Dự án" sequence="0" web_icon="scrum,static/src/img/scrum.png" />
     <!-- Scrum Project Menu -->
-    <menuitem id="scrum_project_view_menu" name="Scrum Project" parent="main_menu" action="action_scrum_project" sequence="1" />
+    <menuitem id="scrum_project_view_menu" parent="main_menu" action="action_scrum_project" sequence="1" />
     <!-- Product Backlog Menu -->
     <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="main_menu" action="action_product_backlog" sequence="2" />
     <!-- Sprint Menu -->
