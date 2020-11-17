@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
@@ -29,7 +30,17 @@ class ProductBacklog(models.Model):
 
     # Rắc rối: nối bảng. Có cách nào hay hơn không ta?
     t_sprint_id = fields.Many2one('one.2.many',string="Sprint ID")
-
+    @api.constrains('s_end_date')
+    def _timecheck(self):
+        for sprint in self.filtered('s_end_date'):
+            today = fields.Date.today()
+            flag = sprint.s_end_date - sprint.s_start_date
+            if(flag.days<0):
+                raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
+            elif(flag.days>28):
+                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
+            elif((today-sprint.s_start_date).days<0):
+                raise ValidationError(_('Ngày bắt đầu không được trước hôm nay'))
     @api.model
     def create(self,vals):
         if vals.get('t_id',_('Task')) == _('Task'):
