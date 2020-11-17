@@ -89,12 +89,15 @@
                     </div>
                     <group>
                         <group>
+
                             <field name="name" class="o_project_name oe_inline" placeholder="e.g. Mời bạn nhập tên Task" />
                             <field name="workflow" />
                             <field name="description" />
                             <field name="storypoint" />
                             <field name="attachment" />
                             <field name="sprint_id">
+
+
                                 <field name="sprint_id" />
                                 <field name="product_backlog_id" invisible="1"/>
                             </field>

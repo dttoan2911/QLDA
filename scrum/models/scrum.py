@@ -20,8 +20,10 @@ class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
     _description = "Product Backlog Items(PBIs)"
+
     _rec_name = 'name'
     _order = 'storypoint desc'
+
 
     id = fields.Char(string="Task ID",required=False,copy=False,readonly=True,index=True,default=lambda self:_('Task'))
     name = fields.Char(string="Tên Task",required=True,track_visibility='always')
@@ -30,12 +32,14 @@ class ProductBacklog(models.Model):
         ('confirm','Confirm'),
         ('done','Done')
     ],default="draft",string="Tình trạng Task",track_visibility='always')
+
     description = fields.Text(string="Mô tả", default="Mô tả Task của bạn", required=True,track_visibility='always')
     storypoint = fields.Integer(string="StoryPoint",  track_visibility='always')
     attachment = fields.Binary(string="Đính kèm tệp",attachment=True, track_visibility='always')
 
     # Rắc rối: nối bảng. Có cách nào hay hơn không ta?
     sprint_id = fields.Many2one('sprint.sprint', ondelete="set null")
+
 
 
 
