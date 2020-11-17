@@ -1,5 +1,4 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
@@ -15,6 +14,7 @@ class ProductBacklog(models.Model):
     _inherit = ['mail.thread','mail.activity.mixin']
     _description = "Product Backlog Items(PBIs)"
     _rec_name = 't_name'
+    _order = 't_storypoint desc'
 
     t_id = fields.Char(string="Task ID",required=True,copy=False,readonly=True,index=True,default=lambda self:_('Task'))
     t_name = fields.Char(string="Tên Task",required=True,track_visibility='always')
@@ -23,14 +23,12 @@ class ProductBacklog(models.Model):
         ('confirm','Confirm'),
         ('done','Done')
     ],default="draft",string="Tình trạng Task",track_visibility='always')
-    t_description = fields.Text(string="Mô tả",track_visibility='always')
+    t_description = fields.Text(string="Mô tả",default="Mô tả Task của bạn",required=True,track_visibility='always')
     t_storypoint = fields.Integer(string="Story Point",track_visibility='always')
     t_attachment = fields.Binary(string="Đính kèm tệp",attachment=True,track_visibility='always')
 
     # Rắc rối: nối bảng. Có cách nào hay hơn không ta?
-    s_ids = fields.Many2one('sprint.sprint',string="Sprint")
-    
-    t_ids = fields.Many2one('product.backlog',string="Taks")
+    t_sprint_id = fields.Many2one('one.2.many',string="Sprint ID")
 
     @api.model
     def create(self,vals):
@@ -46,26 +44,13 @@ class Sprint(models.Model):
     _rec_name = 's_id'
 
     s_id = fields.Char(string="Sprint Name",required=True,copy=False,readonly=True,index=True,default=lambda self:_('Sprint'))
-    s_sprint_goal = fields.Char(string="Sprint Goal")
+    s_sprint_goal = fields.Char(string="Sprint Goal",default="Sprint Goal của bạn",required=True)
     s_define_of_done = fields.Char(string="Define of done")
     s_start_date = fields.Date(string="Ngày bắt đầu")
     s_end_date = fields.Date(string="Ngày kết thúc")
 
     # Sprint quan hệ(1,n) - quan hệ(1,1) Product Backlog
-    t_name = fields.One2many('product.backlog','t_ids',string="Task", required=True)
-    @api.constrains('s_end_date')
-    def _timecheck(self):
-        for sprint in self.filtered('s_end_date'):
-            today = fields.Date.today()
-            flag = sprint.s_end_date - sprint.s_start_date
-            if(flag.days<0):
-                raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
-            elif(flag.days>28):
-                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
-            elif((today-sprint.s_start_date).days<0):
-                raise ValidationError(_('Ngày bắt đầu không được trước hôm nay'))
-
-
+    sprint_list = fields.One2many('one.2.many','sprint_id',string="Sprint List")
 
 
     @api.model
@@ -74,6 +59,14 @@ class Sprint(models.Model):
             vals['s_id'] = self.env['ir.sequence'].next_by_code('sprint.sprint.id') or _('Sprint')
         result = super(Sprint,self).create(vals)
         return result
+    
+class One2Many(models.Model):
+    _name="one.2.many"
+    _description = "One 2 Many"
+    _rec_name = 'sprint_id'
+
+    product_backlog_id = fields.Many2one('product.backlog',string="Task ID")
+    sprint_id = fields.Many2one('sprint.sprint',string="Sprint ID")
 #   Một Product Backlog có ít nhất và nhiều nhất 1 trong Project
 #   Một Product Backlog có ít nhất 1 và nhiều nhất n Task
 #   Bản thân bảng Product Backlog là bảng Task nên không có thuộc tính gì riêng mà thay vào đó là nơi chứa thuộc tính của Task
