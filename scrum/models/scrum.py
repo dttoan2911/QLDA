@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 
 class ScrumProject(models.Model):
     _inherit = 'project.project'
-    is_scrum = fields.Boolean()
+    is_scrum = fields.Boolean(string="Template Scrum")
     # sprint_count = fields.Integer(compute='_compute_sprint_count')
     # def _compute_sprint_count(self):
     #     count =0
@@ -16,7 +16,7 @@ class ProductBacklog(models.Model):
     _order = 'priority desc'
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
-    name_backlog = fields.Char(string="Tên Product Backlog",required=True)
+    name_backlog = fields.Char(string="Name",required=True)
     state = fields.Selection([
         ('draft','Draft'),
         ('confirm','Confirm'),
@@ -31,6 +31,8 @@ class ProductBacklog(models.Model):
     attachment = fields.Binary(string="Đính kèm tệp",attachment=True)
     # Mối quan hệ cha con với Sprint
     sprint_id = fields.Many2one('sprint.sprint',ondelete="set null")
+    # Mối quan hệ cha con với Task
+    backlog_id = fields.One2many('scrum.task','task_id',string="Tasks")
     # ID tự động tăng và cộng chuỗi
     @api.model
     def create(self,vals):
@@ -48,8 +50,16 @@ class Sprint(models.Model):
     define_of_done = fields.Text(string="Define of done")
     start_date = fields.Date(string="Ngày bắt đầu")
     end_date = fields.Date(string="Ngày kết thúc")
+    state = fields.Selection([
+        ('draft','Draft'),
+        ('start','Start'),
+        ('complete','Complete')
+    ],default="draft",string="Trạng thái",track_visibility='always')
     # Mối quan hệ là con của cha product backlog
     sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Backlogs")
+    # Mối quan hệ là con của cha Scrum Team
+    user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
+    # user_id = fields.Many2one('res.users',string="PRO")
     # Thuộc tính cho phương thức
     backlog_count = fields.Integer(string="Backlog Count",compute='get_backlog_count')
     def open_sprint_backlogs(self):
@@ -87,6 +97,31 @@ class Sprint(models.Model):
     def get_backlog_count(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
         self.backlog_count = count
+    def action_start_sprint(self):
+        for rec in self:
+            rec.state = 'start'
+    def action_complete_sprint(self):
+        for rec in self:
+            rec.state = 'complete'
+    def unlink(self):
+        for rec in self:
+            if rec.state == 'start':
+                raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
+        return super(Sprint, self).unlink()
+class ScrumTeam(models.Model):
+    _name='scrum.team'
+    _inherit = ['mail.thread','mail.activity.mixin']
+    _description="Những người dùng tham gia Scrum Project"
+
+    name = fields.Char(string="Name",required="True")
+    user_id = fields.Many2one('res.users',string="Tên tài khoản",track_visibility='always')
+
+class Task(models.Model):
+    _name = 'scrum.task'
+    _description = "Các Task nằm trong một Product Backlog"
+
+    name =fields.Char(string="Tên Task",required=True)
+    task_id = fields.Many2one('product.backlog',string="Task ID")
 # from odoo.exceptions import UserError
 # class ProductBacklog(models.Model):
     # _sql_constraints = [

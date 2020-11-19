@@ -5,27 +5,39 @@
         <field name="name">project.project.inherit</field>
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.view_project_kanban" />
-        <field name="mode">primary</field>
-        <field name="arch" type="xml">
-            <!-- Count các Sprint trong PRoject -->
-            <!-- <field name="rating_status" position="after">
+        <!-- <field name="mode">primary</field> -->
+        <!-- <field name="arch" type="xml">
+            Count các Sprint trong PRoject
+            <field name="rating_status" position="after">
                 <field name="sprint_count"/>
-            </field>                     -->
+            </field>
             <xpath expr="//a[hasclass('o_project_kanban_box')]" position="before">
                 <a class="o_project_kanban_box" name="127" type="action">
-                    <!-- <div>
+                    <div>
                         <span class="o_value"><t t-esc="record.sprint_count.value"/></span>
                         <span class="o_label">Sprints</span>
-                    </div> -->
+                    </div>
                 </a>
             </xpath>
-            <!-- KIẾN THỨC KẾ THỪA VIEW -->
-            <!-- C1: Tìm đến thẻ trong view để kế thừa -->
-            <!-- <xpath expr="//field[@name='partner_id']" position="after"></xpath> -->
-            <!-- C2: Tìm name của field trong view để kế thừa -->
-            <!-- <field name="partner_id" position="after">
+            KIẾN THỨC KẾ THỪA VIEW
+            C1: Tìm đến thẻ trong view để kế thừa
+            <xpath expr="//field[@name='partner_id']" position="after"></xpath>
+            C2: Tìm name của field trong view để kế thừa
+            <field name="partner_id" position="after">
                 <field name="item_name" />
-            </field> -->
+            </field>
+        </field> -->
+    </record>
+
+    <!-- form view of the Project Inherit -->
+    <record id="project_project_sprint_view_form_simplified_inherit" model="ir.ui.view">
+        <field name="name">project.project.sprint.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_scrum" />
+            </xpath>
         </field>
     </record>
     <!-- action of the Scrum Project Menu -->
@@ -34,11 +46,11 @@
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="view_ids" eval="[(5,0, 0),
+        <field name="view_ids" eval="[(5,0,0),
             (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_project_sprint_kanban')}),
         ]" />
         <field name="domain">[('is_scrum', '=', True)]</field>
-        <field name="context">{'default_is_scrum': True}</field>
+        <!-- <field name="context">{'default_is_scrum': True}</field> -->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Mời bạn tạo Project
@@ -50,7 +62,7 @@
         <field name="name">product.backlog.view.form</field>
         <field name="model">product.backlog</field>
         <field name="arch" type="xml">
-            <form string="Backlogs" class="o_form_project_tasks">
+            <form string="Backlogs">
                 <header>
                     <field name="state" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" />
                 </header>
@@ -68,6 +80,11 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Tasks">
+                            <group>
+                                <field name="backlog_id" />
+                            </group>
+                        </page>
                         <page string="Mô tả thêm">
                             <group>
                                 <field name="storypoint" />
@@ -96,6 +113,7 @@
                 <field name="sprint_id" />
                 <field name="state" />
                 <field name="priority" />
+                <field name="storypoint" sum="Tổng Story Point" />
             </tree>
         </field>
     </record>
@@ -140,6 +158,11 @@
         <field name="model">sprint.sprint</field>
         <field name="arch" type="xml">
             <form string="Sprints">
+                <header>
+                    <button name="action_start_sprint" type="object" string="Start Sprint" states="draft" class="oe_highlight" />
+                    <button name="action_complete_sprint" type="object" string="Complete Sprint" states="start" class="oe_highlight" />
+                    <field name="state" widget="statusbar" />
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="open_sprint_backlogs" type="object" class="oe_stat_button" icon="fa-list-alt">
@@ -152,6 +175,9 @@
                         </h1>
                     </div>
                     <group>
+                        <group>
+                            <field name="user_sprint_id" options="{'no_create_edit': True, 'no_create': True, 'no_open': True}" />
+                        </group>
                         <group>
                             <field name="start_date" />
                             <field name="end_date" />
@@ -184,7 +210,9 @@
         <field name="arch" type="xml">
             <tree string="Sprints">
                 <field name="name" />
+                <field name="state" />
                 <field name="start_date" />
+                <field name="user_sprint_id" />
             </tree>
         </field>
     </record>
@@ -201,6 +229,85 @@
                 </p>
         </field>
     </record>
+    <!-- form view of the Scrum Team model  -->
+    <record id="scrum_team_view_form" model="ir.ui.view">
+        <field name="name">scrum.team.view.form</field>
+        <field name="model">scrum.team</field>
+        <field name="arch" type="xml">
+            <form string="Sprints">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                        </group>
+                        <group>
+                            <field name="user_id" />
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user" />
+                    <field name="activity_ids" widget="mail_activity" />
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+    <!-- tree view of the Scrum Team model -->
+    <record id="scrum_team_view_tree" model="ir.ui.view">
+        <field name="name">scrum_team.view.tree</field>
+        <field name="model">scrum.team</field>
+        <field name="arch" type="xml">
+            <tree string="Scrum Teams">
+                <field name="name" />
+                <field name="user_id" />
+            </tree>
+        </field>
+    </record>
+    <!-- action of the Scrum Team Menu -->
+    <record id="action_scrum_team" model="ir.actions.act_window">
+        <field name="name">Scrum Team</field>
+        <field name="res_model">scrum.team</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                    Mời bạn tạo người dùng trong Scrum Project
+                </p>
+        </field>
+    </record>
+    <!-- form view of the Scrum Task model  -->
+    <record id="scrum_task_view_form" model="ir.ui.view">
+        <field name="name">scrum.task.view.form</field>
+        <field name="model">scrum.task</field>
+        <field name="arch" type="xml">
+            <form string="Tasks">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                        </group>
+                        <group>
+                            <field name="task_id" invisible="1" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- action of the Scrum Task Menu -->
+    <record id="action_scrum_task" model="ir.actions.act_window">
+        <field name="name">Scrum Task</field>
+        <field name="res_model">scrum.task</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Mời bạn tạo Task trong một Product Backlog
+            </p>
+        </field>
+    </record>
+    <!-- Main Menu -->
     <menuitem id="main_menu" name="Ứng dụng Quản trị Dự án" sequence="0" web_icon="scrum,static/src/img/scrum.png" />
     <!-- Scrum Project Menu -->
     <menuitem id="scrum_project_view_menu" name="Scrum Project" parent="main_menu" action="action_scrum_project" sequence="1" />
@@ -208,4 +315,6 @@
     <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="main_menu" action="action_product_backlog" sequence="2" />
     <!-- Sprint Menu -->
     <menuitem id="sprint_sprint_view_menu" name="Sprint" parent="main_menu" action="action_sprint_sprint" sequence="3" />
+    <!-- Scrum Team Menu -->
+    <menuitem id="scrum_team_view_menu" name="Scrum Team" parent="main_menu" action="action_scrum_team" sequence="4" />
 </odoo>
