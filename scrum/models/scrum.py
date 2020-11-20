@@ -1,19 +1,59 @@
 from odoo import models, fields, api, _
 
 class ScrumProject(models.Model):
-    _inherit = 'project.project'
+    _name = 'scrum.project'
+    # Phương thức đếm các Product Backlog trong Backlogs
+    def get_product_backlog_count(self):
+        count = self.env['product.backlog'].search_count([('project_id','=',self.id)])
+        self.backlog_count = count
+    # Phương thức trỏ đến các Product Backlog của một Project
+    def open_product_backlog(self):
+        return{
+            'name': _('Product Backlog'),
+            'domain': [('project_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'product.backlog',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
+    # Thuộc tính bảng Scrum Project
+    name=fields.Char("Tên Project",required="True")
     is_scrum = fields.Boolean(string="Template Scrum")
-    # sprint_count = fields.Integer(compute='_compute_sprint_count')
-    # def _compute_sprint_count(self):
-    #     count =0
-    #     for project in self:
-    #         count +=1
-    #     project.sprint_count = count
+    # Thuộc tính đếm các Product Backlog trong Backlogs
+    backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
     _description = "Product Backlog Items(PBIs)"
     _order = 'priority desc'
+    # Phương thức đếm các Task trong Product Backlog
+    def get_task_count(self):
+        count = self.env['scrum.task'].search_count([('backlog_id','=',self.id)])
+        self.task_count = count
+    # Phương thức trỏ đến các Task của một Product Backlog
+    def open_product_backlog_tasks(self):
+        return{
+            'name': _('Tasks'),
+            'domain': [('backlog_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'scrum.task',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
+    # Phương thức tự động tạo chuỗi và tăng ID cho thuộc tính name
+    @api.model
+    def create(self,vals):
+        if vals.get('name',_('New')) == _('New'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('product.backlog.name') or _('New')
+        result = super(ProductBacklog,self).create(vals)
+        return result
+    # @api.onchange('project_id')
+    # def set_project_id(self):
+    #     for rec in self:
+    #         if rec.project_id:
+    #             rec.project_id = rec.project_id.name
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Name",required=True)
@@ -29,21 +69,71 @@ class ProductBacklog(models.Model):
     description = fields.Text(string="Mô tả")
     storypoint = fields.Integer(string="Story Point")
     attachment = fields.Binary(string="Đính kèm tệp",attachment=True)
-    # Mối quan hệ cha con với Sprint
+    # Thuộc tính đếm các Task trong Product Backlog
+    task_count = fields.Integer(string="Task Count",compute='get_task_count')
+    # Quan hệ cha con với bảng Sprint: Một Product Backlog chỉ được nằm trong một Sprint
     sprint_id = fields.Many2one('sprint.sprint',ondelete="set null")
-    # Mối quan hệ cha con với Task
-    backlog_id = fields.One2many('scrum.task','task_id',string="Tasks")
-    # ID tự động tăng và cộng chuỗi
-    @api.model
-    def create(self,vals):
-        if vals.get('name',_('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('product.backlog.name') or _('New')
-        result = super(ProductBacklog,self).create(vals)
-        return result
+    # Quan hệ cha con với bảng Scrum Task: Một Product Backlog có ít nhất 0 hoặc nhiều Task
+    task_id = fields.One2many('scrum.task','backlog_id',string="Task ID")
+    # Quan hệ một một với bảng Scrum Project: Một Product Backlog chỉ được nằm trong một Scrum Project
+    project_id = fields.Many2one('scrum.project',string="Tên Project")
 class Sprint(models.Model):
     _name = 'sprint.sprint'
     _description = "Sprint"
     _inherit = ['mail.thread','mail.activity.mixin']
+    # Phương thức đếm các Product Backlog trong Sprint
+    def get_backlog_count(self):
+        count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
+        self.backlog_count = count
+    # Phương thức trỏ đến các Product Backlog của một Sprint
+    def open_sprint_backlogs(self):
+        return{
+            'name': _('Backlogs'),
+            'domain': [('sprint_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'product.backlog',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
+    # Phương thức tự động tạo chuỗi và tăng ID cho thuộc tính name
+    @api.model
+    def create(self,vals):
+        if vals.get('name',_('New')) == _('New'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('sprint.sprint.name') or _('New')
+        result = super(Sprint,self).create(vals)
+        return result
+    # Phương thức kiểm tra start date
+    @api.constrains('start_date')
+    def _timechk(self):
+        for sprint in self.filtered('start_date'):
+            today = fields.Date.today()
+            flag = today - sprint.start_date
+            if(flag.days>0):
+                raise ValidationError(_('Ngày bắt đầu phải trước hôm nay'))
+    # Phương thức kiểm tra end date
+    @api.constrains('end_date')
+    def _timecheck(self):
+        for sprint in self.filtered('end_date'):
+            flag = sprint.end_date - sprint.start_date
+            if(flag.days<0):
+                raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
+            elif(flag.days>28):
+                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
+    # Phương thức chuyển đổi trạng thái thành start
+    def action_start_sprint(self):
+        for rec in self:
+            rec.state = 'start'
+    # Phương thức chuyển đổi trạng thái thành complete
+    def action_complete_sprint(self):
+        for rec in self:
+            rec.state = 'complete'
+    # Phương thức kiểm tra không được xóa Sprint khi đang ở trạng thái Start
+    def unlink(self):
+        for rec in self:
+            if rec.state == 'start':
+                raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
+        return super(Sprint, self).unlink()
     # Thuộc tính bảng Sprint
     name = fields.Char(string="Sprint Name",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     sprint_goal = fields.Text(string="Sprint Goal")
@@ -55,73 +145,32 @@ class Sprint(models.Model):
         ('start','Start'),
         ('complete','Complete')
     ],default="draft",string="Trạng thái",track_visibility='always')
-    # Mối quan hệ là con của cha product backlog
-    sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Backlogs")
-    # Mối quan hệ là con của cha Scrum Team
-    user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
-    # user_id = fields.Many2one('res.users',string="PRO")
-    # Thuộc tính cho phương thức
+    # Thuộc tính đếm các Product Backlog trong một Sprint
     backlog_count = fields.Integer(string="Backlog Count",compute='get_backlog_count')
-    def open_sprint_backlogs(self):
-        return{
-            'name': _('Backlogs'),
-            'domain': [('sprint_id','=',self.id)],
-            'view_type': 'form',
-            'res_model': 'product.backlog',
-            'view_id': False,
-            'view_mode': 'tree,form',
-            'type': 'ir.actions.act_window',
-        }
-    # Những constraint ràng buộc
-    @api.model
-    def create(self,vals):
-        if vals.get('name',_('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('sprint.sprint.name') or _('New')
-        result = super(Sprint,self).create(vals)
-        return result
-    @api.constrains('start_date')
-    def _timechk(self):
-        for sprint in self.filtered('start_date'):
-            today = fields.Date.today()
-            flag = today - sprint.start_date
-            if(flag.days>0):
-                raise ValidationError(_('Ngày bắt đầu phải trước hôm nay'))
-    @api.constrains('end_date')
-    def _timecheck(self):
-        for sprint in self.filtered('end_date'):
-            flag = sprint.end_date - sprint.start_date
-            if(flag.days<0):
-                raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
-            elif(flag.days>28):
-                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
-    def get_backlog_count(self):
-        count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
-        self.backlog_count = count
-    def action_start_sprint(self):
-        for rec in self:
-            rec.state = 'start'
-    def action_complete_sprint(self):
-        for rec in self:
-            rec.state = 'complete'
-    def unlink(self):
-        for rec in self:
-            if rec.state == 'start':
-                raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
-        return super(Sprint, self).unlink()
+    # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
+    sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Product Backlog")
+    # Quan hệ cha con với bảng Scrum Team: Chưa rõ phần này
+    user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
 class ScrumTeam(models.Model):
     _name='scrum.team'
     _inherit = ['mail.thread','mail.activity.mixin']
     _description="Những người dùng tham gia Scrum Project"
-
+    # Thuộc tính bảng Scrum Team
     name = fields.Char(string="Name",required="True")
+    # Quan hệ cha con với bảng Users: Chưa rõ phần này
     user_id = fields.Many2one('res.users',string="Tên tài khoản",track_visibility='always')
-
 class Task(models.Model):
     _name = 'scrum.task'
     _description = "Các Task nằm trong một Product Backlog"
-
+    # Thuộc tính bảng Task
     name =fields.Char(string="Tên Task",required=True)
-    task_id = fields.Many2one('product.backlog',string="Task ID")
+    state = fields.Selection([
+        ('todo','To do'),
+        ('inprogress','In Progress'),
+        ('done','Done')
+    ],default="todo",string="Trạng thái",track_visibility='always')
+    # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
+    backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
 # from odoo.exceptions import UserError
 # class ProductBacklog(models.Model):
     # _sql_constraints = [
@@ -148,3 +197,17 @@ class Task(models.Model):
     #         if backlog.name == 'root':
     #             raise UserError(_("Ban ko duoc phep xoa backlog ten 'root'"))
     #     return super(Backlog, self).unlink()
+    # sprint_count = fields.Integer(compute='_compute_sprint_count')
+    # def _compute_sprint_count(self):
+    #     count =0
+    #     for project in self:
+    #         count +=1
+    #     project.sprint_count = count
+    # Mối quan hệ 1-1 với Scrum Project
+    # Phương thức lấy tự động ID Project
+    # @api.model
+    # def create(self,vals):
+    #     res = super(ProductBacklog, self).create(vals)
+    #     self.env['scrum.project'].search([('project_id', '=', False)]).write({'project_id':res.id})
+    #     return res
+    # project_id = fields.Many2one('scrum.project',string="Tên Project",index=True,ondelete="cascade",default=create)

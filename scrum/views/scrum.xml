@@ -1,61 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- kanban view of the Project Inherit -->
-    <record id="view_project_sprint_kanban" model="ir.ui.view">
-        <field name="name">project.project.inherit</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.view_project_kanban" />
-        <!-- <field name="mode">primary</field> -->
-        <!-- <field name="arch" type="xml">
-            Count các Sprint trong PRoject
-            <field name="rating_status" position="after">
-                <field name="sprint_count"/>
-            </field>
-            <xpath expr="//a[hasclass('o_project_kanban_box')]" position="before">
-                <a class="o_project_kanban_box" name="127" type="action">
-                    <div>
-                        <span class="o_value"><t t-esc="record.sprint_count.value"/></span>
-                        <span class="o_label">Sprints</span>
-                    </div>
-                </a>
-            </xpath>
-            KIẾN THỨC KẾ THỪA VIEW
-            C1: Tìm đến thẻ trong view để kế thừa
-            <xpath expr="//field[@name='partner_id']" position="after"></xpath>
-            C2: Tìm name của field trong view để kế thừa
-            <field name="partner_id" position="after">
-                <field name="item_name" />
-            </field>
-        </field> -->
-    </record>
-
-    <!-- form view of the Project Inherit -->
-    <record id="project_project_sprint_view_form_simplified_inherit" model="ir.ui.view">
-        <field name="name">project.project.sprint.inherit</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.project_project_view_form_simplified" />
+    <!-- form view of the Scrum Project model  -->
+    <record id="scrum_project_view_form" model="ir.ui.view">
+        <field name="name">scrum.project.view.form</field>
+        <field name="model">scrum.project</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='name']" position="after">
+            <form string="Project" create="false">
+                <header>
+                    <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_project_id':active_id}" />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt">
+                            <field name="backlog_count" string="Product Backlog" widget="statinfo" />
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" />
+                        </group>
+                        <group>
+                            <field name="is_scrum" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- tree view of the Scrum Project model -->
+    <record id="scrum_project_view_tree" model="ir.ui.view">
+        <field name="name">scrum.project.view.tree</field>
+        <field name="model">scrum.project</field>
+        <field name="arch" type="xml">
+            <tree string="Project">
+                <field name="name" />
                 <field name="is_scrum" />
-            </xpath>
+                <!-- <field name="backlog_count" /> -->
+            </tree>
         </field>
     </record>
     <!-- action of the Scrum Project Menu -->
     <record id="action_scrum_project" model="ir.actions.act_window">
         <field name="name">Scrum Project</field>
-        <field name="res_model">project.project</field>
+        <field name="res_model">scrum.project</field>
         <field name="view_type">form</field>
-        <field name="view_mode">kanban,tree,form</field>
-        <field name="view_ids" eval="[(5,0,0),
-            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_project_sprint_kanban')}),
-        ]" />
+        <field name="view_mode">tree,form</field>
         <field name="domain">[('is_scrum', '=', True)]</field>
-        <!-- <field name="context">{'default_is_scrum': True}</field> -->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Mời bạn tạo Project
-            </p>
+                    Mời bạn tạo Project
+                </p>
         </field>
+    </record>
+    <!-- action of the Scrum Project Sprints -->
+    <record id="action_scrum_project_backlog" model="ir.actions.act_window">
+        <field name="name">Product Backlog</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.backlog</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('project_id', '=', active_id)]</field>
+        <field name="view_id" ref="scrum.product_backlog_view_tree" />
+        <field name="binding_model_id" ref="model_scrum_project" />
     </record>
     <!-- form view of the Product Backlog model  -->
     <record id="product_backlog_view_form" model="ir.ui.view">
@@ -69,21 +75,43 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" readonly="1" />
+                            <field name="name" />
                         </h1>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="open_product_backlog_tasks" type="object" class="oe_stat_button" icon="fa-list-alt">
+                            <field name="task_count" string="Tasks" widget="statinfo" />
+                        </button>
                     </div>
                     <group>
                         <group>
                             <field name="name_backlog" />
                             <field name="priority" />
+                        </group>
+                        <group>
                             <field name="sprint_id" />
+                            <field name="project_id" />
                         </group>
                     </group>
                     <notebook>
                         <page string="Tasks">
-                            <group>
-                                <field name="backlog_id" />
-                            </group>
+                            <field name="task_id">
+                                <tree editable="bottom">
+                                    <field name="name" />
+                                    <field name="state" />
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="name" />
+                                            <field name="state" />
+                                        </group>
+                                        <group>
+                                            <field name="backlog_id" />
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
                         </page>
                         <page string="Mô tả thêm">
                             <group>
@@ -110,10 +138,15 @@
             <tree string="Backlogs">
                 <field name="name" />
                 <field name="name_backlog" />
+                <field name="project_id" />
                 <field name="sprint_id" />
-                <field name="state" />
                 <field name="priority" />
-                <field name="storypoint" sum="Tổng Story Point" />
+                <field name="state" />
+                <field name="task_id" />
+                <!-- <field name="task_count" /> -->
+                <!-- <field name="description" /> -->
+                <!-- <field name="attachment" /> -->
+                <!-- <field name="storypoint" sum="Tổng Story Point" /> -->
             </tree>
         </field>
     </record>
@@ -145,6 +178,8 @@
         <field name="res_model">product.backlog</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
+        <!-- <field name="context">{'active_id': 1, 'search_default_project_id': 1, 'default_poject_id': 1}</field> -->
+        <!-- <field name="context">{'search_default_project': [active_id], 'default_project': active_id}</field> -->
         <!-- <field name="context">{"search_default_'t_workflow'":1}</field> -->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -171,12 +206,12 @@
                     </div>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" readonly="1" />
+                            <field name="name" />
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="user_sprint_id" options="{'no_create_edit': True, 'no_create': True, 'no_open': True}" />
+                            <field name="user_sprint_id" />
                         </group>
                         <group>
                             <field name="start_date" />
@@ -184,8 +219,15 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Product Backlogs">
-                            <field name="sprint_backlog_ids" widget="many2many" />
+                        <page string="Backlogs">
+                            <field name="sprint_backlog_ids" widget="many2many">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="name_backlog" />
+                                    <field name="priority" />
+                                    <field name="state" />
+                                </tree>
+                            </field>
                         </page>
                         <page string="Sprint Goal">
                             <field name="sprint_goal" />
@@ -212,7 +254,12 @@
                 <field name="name" />
                 <field name="state" />
                 <field name="start_date" />
-                <field name="user_sprint_id" />
+                <field name="sprint_backlog_ids" />
+                <!-- <field name="user_sprint_id" /> -->
+                <!-- <field name="end_date" /> -->
+                <!-- <field name="sprint_goal" /> -->
+                <!-- <field name="define_of_done" /> -->
+
             </tree>
         </field>
     </record>
@@ -281,18 +328,31 @@
         <field name="name">scrum.task.view.form</field>
         <field name="model">scrum.task</field>
         <field name="arch" type="xml">
-            <form string="Tasks">
+            <form string="Tasks" create="false">
                 <sheet>
                     <group>
                         <group>
                             <field name="name" />
+                            <field name="state" />
                         </group>
                         <group>
-                            <field name="task_id" invisible="1" />
+                            <field name="backlog_id" />
                         </group>
                     </group>
                 </sheet>
             </form>
+        </field>
+    </record>
+    <!-- tree view of the Scrum Task model -->
+    <record id="scrum_task_view_tree" model="ir.ui.view">
+        <field name="name">scrum_task.view.tree</field>
+        <field name="model">scrum.task</field>
+        <field name="arch" type="xml">
+            <tree string="Scrum Tasks" create="false">
+                <field name="name" />
+                <field name="state" />
+                <field name="backlog_id" />
+            </tree>
         </field>
     </record>
     <!-- action of the Scrum Task Menu -->
@@ -300,10 +360,10 @@
         <field name="name">Scrum Task</field>
         <field name="res_model">scrum.task</field>
         <field name="view_type">form</field>
-        <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Mời bạn tạo Task trong một Product Backlog
+                Mời bạn tạo Task
             </p>
         </field>
     </record>
@@ -313,8 +373,12 @@
     <menuitem id="scrum_project_view_menu" name="Scrum Project" parent="main_menu" action="action_scrum_project" sequence="1" />
     <!-- Product Backlog Menu -->
     <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="main_menu" action="action_product_backlog" sequence="2" />
+    <!-- Scrum Task Menu -->
+    <menuitem id="scrum_task_view_menu" name="Scrum Task" parent="main_menu" action="action_scrum_task" sequence="3" />
     <!-- Sprint Menu -->
-    <menuitem id="sprint_sprint_view_menu" name="Sprint" parent="main_menu" action="action_sprint_sprint" sequence="3" />
+    <menuitem id="sprint_sprint_view_menu" name="Sprint" parent="main_menu" action="action_sprint_sprint" sequence="4" />
     <!-- Scrum Team Menu -->
-    <menuitem id="scrum_team_view_menu" name="Scrum Team" parent="main_menu" action="action_scrum_team" sequence="4" />
+    <menuitem id="scrum_team_view_menu" name="Scrum Team" parent="main_menu" action="action_scrum_team" sequence="5" />
+    <!-- Create Product Backlog Menu -->
+    <menuitem id="create_product_backlog_menu" name="Create Product Backlog" parent="main_menu" action="create_product_backlog_wizard" sequence="6" />
 </odoo>

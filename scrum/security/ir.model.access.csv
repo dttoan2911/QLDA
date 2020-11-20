@@ -1,4 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_scrum_project,access.scrum.project,model_scrum_project,,1,1,1,1
 access_product_backlog,access.product.backlog,model_product_backlog,,1,1,1,1
 access_sprint_sprint,access.sprint.sprint,model_sprint_sprint,,1,1,1,1
 access_scrum_team,access.scrum.team,model_scrum_team,,1,1,1,1

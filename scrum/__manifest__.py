@@ -28,6 +28,7 @@
         'security/security.xml',
         'views/views.xml',
         'views/templates.xml',
+        'wizards/create_product_backlog.xml',
         'views/scrum.xml',
         'views/sequence.xml',
     ],
