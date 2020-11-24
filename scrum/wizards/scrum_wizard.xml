@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- form view of the Create Scrum Project model  -->
+    <record id="create_scrum_project_form" model="ir.ui.view">
+        <field name="name">create.scrum.project.wizards</field>
+        <field name="model">create.scrum.project</field>
+        <field name="arch" type="xml">
+            <form string="Create Scrum Project">
+                <group>
+                    <field name="name" placeholder="Mời bạn nhập tên Project" />
+                </group>
+                <footer>
+                    <button name="create_scrum_project" string="Create" type="object" class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- action of the Create Scrum Project Menu -->
+    <record id="create_scrum_project_wizard" model="ir.actions.act_window">
+        <field name="name">Create Scrum Project</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">create.scrum.project</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="create_scrum_project_form" />
+        <field name="target">new</field>
+    </record>
+    <!-- form view of the Create Product Backlog model  -->
+    <record id="create_product_backlog_form" model="ir.ui.view">
+        <field name="name">create.product.backlog.wizards</field>
+        <field name="model">create.product.backlog</field>
+        <field name="arch" type="xml">
+            <form string="Create Product Backlog">
+                <group>
+                    <field name="project_id" options="{'no_open':True}" readonly="1" />
+                    <field name="name_backlog" />
+                </group>
+                <footer>
+                    <button name="create_product_backlog" string="Create" type="object" class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- action of the Create Product Backlog Menu -->
+    <record id="create_product_backlog_wizard" model="ir.actions.act_window">
+        <field name="name">Create Product Backlog</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">create.product.backlog</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="create_product_backlog_form" />
+        <field name="target">new</field>
+    </record>
+    <!-- form view of the Create Sprint model  -->
+    <record id="create_sprint_form" model="ir.ui.view">
+        <field name="name">create.sprint.wizards</field>
+        <field name="model">create.sprint</field>
+        <field name="arch" type="xml">
+            <form string="Create Sprint">
+                <group>
+                    <field name="project_id" options="{'no_open':True}" readonly="1" />
+                    <field name="sprint_backlog_ids" widget="many2many">
+                        <tree>
+                            <field name="name" />
+                            <field name="name_backlog" />
+                            <field name="priority" />
+                            <field name="state" />
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button name="create_sprint" string="Create" type="object" class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- action of the Create Sprint Menu -->
+    <record id="create_sprint_wizard" model="ir.actions.act_window">
+        <field name="name">Create Sprint</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">create.sprint</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="create_sprint_form" />
+        <field name="target">new</field>
+    </record>
+</odoo>

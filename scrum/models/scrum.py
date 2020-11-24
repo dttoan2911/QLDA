@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
-    # Phương thức đếm các Product Backlog trong Backlogs
+    # Phương thức đếm các Product Backlog
     def get_product_backlog_count(self):
         count = self.env['product.backlog'].search_count([('project_id','=',self.id)])
         self.backlog_count = count
@@ -17,11 +17,28 @@ class ScrumProject(models.Model):
             'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
         }
+    # Phương thức đếm các Sprint
+    def get_sprint_count(self):
+        count = self.env['sprint.sprint'].search_count([('project_id','=',self.id)])
+        self.sprint_count = count
+    # Phương thức trỏ đến các Sprint của một Project
+    def open_sprint(self):
+        return{
+            'name': _('Sprint'),
+            'domain': [('project_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'sprint.sprint',
+            'view_id': False,
+            'view_mode': 'tree,form,graph',
+            'type': 'ir.actions.act_window',
+        }
     # Thuộc tính bảng Scrum Project
     name=fields.Char("Tên Project",required="True")
     is_scrum = fields.Boolean(string="Template Scrum")
-    # Thuộc tính đếm các Product Backlog trong Backlogs
+    # Thuộc tính đếm các Product Backlog
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
+    # Thuộc tính đếm các Sprint
+    sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -49,6 +66,13 @@ class ProductBacklog(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('product.backlog.name') or _('New')
         result = super(ProductBacklog,self).create(vals)
         return result
+    # Phương thức xóa tạm tất cả Task trong một Product Backlog
+    def delete_all_task(self):
+        for rec in self:
+            rec.task_id = [(5,0,0)]
+    # Phương thức hiển thị tất cả cột state trong Kanban
+    def _expand_states(self, states, domain, order):
+        return [key for key, val in type(self).state.selection]
     # @api.onchange('project_id')
     # def set_project_id(self):
     #     for rec in self:
@@ -61,7 +85,7 @@ class ProductBacklog(models.Model):
         ('draft','Draft'),
         ('confirm','Confirm'),
         ('done','Done')
-    ],default="draft",string="Trạng thái",track_visibility='always')
+    ],default="draft",string="Trạng thái",group_expand='_expand_states',track_visibility='always',index=True)
     priority = fields.Selection([
         ('0', 'Low'),
         ('1', 'Normal'),
@@ -88,12 +112,12 @@ class Sprint(models.Model):
     # Phương thức trỏ đến các Product Backlog của một Sprint
     def open_sprint_backlogs(self):
         return{
-            'name': _('Backlogs'),
+            'name': _('Kanban'),
             'domain': [('sprint_id','=',self.id)],
             'view_type': 'form',
             'res_model': 'product.backlog',
             'view_id': False,
-            'view_mode': 'tree,form',
+            'view_mode': 'kanban,form',
             'type': 'ir.actions.act_window',
         }
     # Phương thức tự động tạo chuỗi và tăng ID cho thuộc tính name
@@ -134,6 +158,11 @@ class Sprint(models.Model):
             if rec.state == 'start':
                 raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
         return super(Sprint, self).unlink()
+    # Phương thức chỉ lấy các Product Backlog thuộc cùng một Project với Sprint
+    @api.onchange('project_id')
+    def onchange_project_id(self):
+        for rec in self:
+            return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id)]}}
     # Thuộc tính bảng Sprint
     name = fields.Char(string="Sprint Name",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     sprint_goal = fields.Text(string="Sprint Goal")
@@ -151,6 +180,8 @@ class Sprint(models.Model):
     sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Product Backlog")
     # Quan hệ cha con với bảng Scrum Team: Chưa rõ phần này
     user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
+    # Quan hệ cha con với bảng Project
+    project_id = fields.Many2one('scrum.project',string="Project")
 class ScrumTeam(models.Model):
     _name='scrum.team'
     _inherit = ['mail.thread','mail.activity.mixin']

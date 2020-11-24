@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from . import create_product_backlog
+from . import scrum_wizard

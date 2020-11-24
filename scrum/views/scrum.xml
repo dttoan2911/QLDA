@@ -8,11 +8,15 @@
             <form string="Project" create="false">
                 <header>
                     <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_project_id':active_id}" />
+                    <button name="%(scrum.create_sprint_wizard)d" string="Create Sprint" type="action" class="oe_highlight" context="{'default_project_id':active_id}" />
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt">
                             <field name="backlog_count" string="Product Backlog" widget="statinfo" />
+                        </button>
+                        <button name="open_sprint" type="object" class="oe_stat_button" icon="fa-list-alt">
+                            <field name="sprint_count" string="Sprint" widget="statinfo" />
                         </button>
                     </div>
                     <group>
@@ -52,7 +56,7 @@
                 </p>
         </field>
     </record>
-    <!-- action of the Scrum Project Sprints -->
+    <!-- action of the Scrum Project Product Backlog Wizard -->
     <record id="action_scrum_project_backlog" model="ir.actions.act_window">
         <field name="name">Product Backlog</field>
         <field name="type">ir.actions.act_window</field>
@@ -63,6 +67,17 @@
         <field name="view_id" ref="scrum.product_backlog_view_tree" />
         <field name="binding_model_id" ref="model_scrum_project" />
     </record>
+    <!-- action of the Scrum Project Sprint Wizard -->
+    <record id="action_scrum_project_sprint" model="ir.actions.act_window">
+        <field name="name">Sprint</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sprint.sprint</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('project_id', '=', active_id)]</field>
+        <field name="view_id" ref="scrum.sprint_sprint_view_tree" />
+        <field name="binding_model_id" ref="model_scrum_project" />
+    </record>
     <!-- form view of the Product Backlog model  -->
     <record id="product_backlog_view_form" model="ir.ui.view">
         <field name="name">product.backlog.view.form</field>
@@ -70,6 +85,7 @@
         <field name="arch" type="xml">
             <form string="Backlogs">
                 <header>
+                    <button name="delete_all_task" type="object" string="Delete All Task" class="oe_highlight" />
                     <field name="state" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" />
                 </header>
                 <sheet>
@@ -135,7 +151,7 @@
         <field name="name">product.backlog.view.tree</field>
         <field name="model">product.backlog</field>
         <field name="arch" type="xml">
-            <tree string="Backlogs">
+            <tree string="Backlogs" create="false">
                 <field name="name" />
                 <field name="name_backlog" />
                 <field name="project_id" />
@@ -148,6 +164,34 @@
                 <!-- <field name="attachment" /> -->
                 <!-- <field name="storypoint" sum="Tổng Story Point" /> -->
             </tree>
+        </field>
+    </record>
+    <!-- kanban view of the Product Backlog model -->
+    <record id="product_backlog_view_kanban" model="ir.ui.view">
+        <field name="name">product.backlog.view.kanban</field>
+        <field name="model">product.backlog</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false" class="o_kanban_small_column" >
+                <field name="id" />
+                <field name="name" />
+                <field name="state" />
+                <progressbar field="state" sum_field="planned_revenue" colors='{"done":"success","confirm":"muted"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name" />
+                                </strong>
+                                <div class="o_kanban_tags_section" />
+                                <ul>
+                                    <li>Trạng thái: <field name="state" /></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
         </field>
     </record>
     <!-- search view of the Product Backlog model -->
@@ -211,6 +255,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="project_id" />
                             <field name="user_sprint_id" />
                         </group>
                         <group>
@@ -226,6 +271,7 @@
                                     <field name="name_backlog" />
                                     <field name="priority" />
                                     <field name="state" />
+                                    <field name="task_id" />
                                 </tree>
                             </field>
                         </page>
@@ -250,11 +296,12 @@
         <field name="name">sprint.sprint.view.tree</field>
         <field name="model">sprint.sprint</field>
         <field name="arch" type="xml">
-            <tree string="Sprints">
+            <tree string="Sprints" create="false">
                 <field name="name" />
                 <field name="state" />
                 <field name="start_date" />
                 <field name="sprint_backlog_ids" />
+                <field name="project_id" />
                 <!-- <field name="user_sprint_id" /> -->
                 <!-- <field name="end_date" /> -->
                 <!-- <field name="sprint_goal" /> -->
@@ -263,13 +310,24 @@
             </tree>
         </field>
     </record>
+    <!-- graph view of the Sprint model -->
+    <record id="sprint_sprint_view_graph" model="ir.ui.view">
+        <field name="name">sprint.sprint.view.graph</field>
+        <field name="model">sprint.sprint</field>
+        <field name="arch" type="xml">
+            <graph string="Sprint Graph" type="pie">
+                <field name="user_sprint_id" />
+                <field name="state" type="measure"/>
+            </graph>
+        </field>
+    </record>
     <!-- action of the Sprint Menu -->
     <record id="action_sprint_sprint" model="ir.actions.act_window">
         <field name="name">Sprint</field>
         <field name="res_model">sprint.sprint</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-        <!-- <field name="context">{"search_default_draft":1}</field> -->
+        <!-- <field name="context">{"search_default_state_start":1}</field> -->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                     Mời bạn tạo Sprint
@@ -372,13 +430,13 @@
     <!-- Scrum Project Menu -->
     <menuitem id="scrum_project_view_menu" name="Scrum Project" parent="main_menu" action="action_scrum_project" sequence="1" />
     <!-- Product Backlog Menu -->
-    <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="main_menu" action="action_product_backlog" sequence="2" />
+    <!-- <menuitem id="product_backlog_view_menu" name="Product Backlog" parent="main_menu" action="action_product_backlog" sequence="2" /> -->
     <!-- Scrum Task Menu -->
-    <menuitem id="scrum_task_view_menu" name="Scrum Task" parent="main_menu" action="action_scrum_task" sequence="3" />
+    <!-- <menuitem id="scrum_task_view_menu" name="Scrum Task" parent="main_menu" action="action_scrum_task" sequence="3" /> -->
     <!-- Sprint Menu -->
-    <menuitem id="sprint_sprint_view_menu" name="Sprint" parent="main_menu" action="action_sprint_sprint" sequence="4" />
+    <!-- <menuitem id="sprint_sprint_view_menu" name="Sprint" parent="main_menu" action="action_sprint_sprint" sequence="4" /> -->
     <!-- Scrum Team Menu -->
     <menuitem id="scrum_team_view_menu" name="Scrum Team" parent="main_menu" action="action_scrum_team" sequence="5" />
     <!-- Create Product Backlog Menu -->
-    <menuitem id="create_product_backlog_menu" name="Create Product Backlog" parent="main_menu" action="create_product_backlog_wizard" sequence="6" />
+    <!-- <menuitem id="create_product_backlog_menu" name="Create Product Backlog" parent="main_menu" action="create_product_backlog_wizard" sequence="6" /> -->
 </odoo>
