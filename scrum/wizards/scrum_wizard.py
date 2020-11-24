@@ -28,7 +28,8 @@ class CreateSprint(models.TransientModel):
     # Phương thức Create Sprint
     def create_sprint(self):
         vals={
-            'project_id':self.project_id.id
+            'project_id':self.project_id.id,
+            'sprint_backlog_ids':self.sprint_backlog_ids
         }
         self.env['sprint.sprint'].create(vals)
     # Phương thức chỉ lấy các Product Backlog thuộc cùng một Project với Sprint

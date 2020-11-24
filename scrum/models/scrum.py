@@ -39,6 +39,10 @@ class ScrumProject(models.Model):
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
     # Thuộc tính đếm các Sprint
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
+    # Thuộc tính lấy các Product Backlog của riêng Project
+    project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
+    # Thuộc tính lấy các Sprint của riêng Project
+    project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint")
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -112,7 +116,7 @@ class Sprint(models.Model):
     # Phương thức trỏ đến các Product Backlog của một Sprint
     def open_sprint_backlogs(self):
         return{
-            'name': _('Kanban'),
+            'name': _('Backlogs'),
             'domain': [('sprint_id','=',self.id)],
             'view_type': 'form',
             'res_model': 'product.backlog',
