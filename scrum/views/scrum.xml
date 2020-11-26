@@ -7,8 +7,9 @@
         <field name="arch" type="xml">
             <form string="Project" create="false">
                 <header>
-                    <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_project_id':active_id}" />
+                    <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_project_id':active_id}" groups="scrum.group_scrum_product_owner" />
                     <button name="%(scrum.create_sprint_wizard)d" string="Create Sprint" type="action" class="oe_highlight" context="{'default_project_id':active_id}" />
+                    <!-- <button name="%(scrum.create_scrum_project_wizard)d" string="Create Project" type="action" class="oe_highlight" /> -->
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -29,7 +30,7 @@
                     </group>
                     <notebook>
                         <page string="Product Backlog">
-                            <field name="project_backlog_ids" widget="many2many" >
+                            <field name="project_backlog_ids" widget="many2many">
                                 <tree>
                                     <field name="name" />
                                     <field name="name_backlog" />
@@ -69,12 +70,36 @@
             </tree>
         </field>
     </record>
+    <!-- kanban view of the Scrum Project model -->
+    <record id="scrum_project_view_kanban" model="ir.ui.view">
+        <field name="name">scrum.project.view.kanban</field>
+        <field name="model">scrum.project</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name" />
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <strong class="o_kaban_record_title">
+                                    <field name="name" />
+                                </strong>
+                                <div class="o_kanban_tags_section" />
+                                <ul>
+                                </ul>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     <!-- action of the Scrum Project Menu -->
     <record id="action_scrum_project" model="ir.actions.act_window">
         <field name="name">Scrum Project</field>
         <field name="res_model">scrum.project</field>
         <field name="view_type">form</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">kanban,form</field>
         <field name="domain">[('is_scrum', '=', True)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -106,6 +131,7 @@
         <field name="view_id" ref="scrum.sprint_sprint_view_tree" />
         <field name="binding_model_id" ref="model_scrum_project" />
     </record> -->
+
     <!-- form view of the Product Backlog model  -->
     <record id="product_backlog_view_form" model="ir.ui.view">
         <field name="name">product.backlog.view.form</field>
@@ -113,7 +139,8 @@
         <field name="arch" type="xml">
             <form string="Backlogs">
                 <header>
-                    <button name="delete_all_task" type="object" string="Delete All Task" class="oe_highlight" />
+                    <button name="%(scrum.create_task_wizard)d" string="Create Task" type="action" class="oe_highlight" groups="scrum.group_scrum_development_team" />
+                    <!-- <button name="delete_all_task" type="object" string="Delete All Task" class="oe_highlight" /> -->
                     <field name="state" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" />
                 </header>
                 <sheet>
@@ -267,7 +294,7 @@
             <form string="Sprints">
                 <header>
                     <button name="action_start_sprint" type="object" string="Start Sprint" states="draft" class="oe_highlight" />
-                    <button name="action_complete_sprint" type="object" string="Complete Sprint" states="start" class="oe_highlight" />
+                    <button name="action_complete_sprint" type="object" string="Complete Sprint" states="start" class="oe_highlight" groups="scrum.group_scrum_product_owner" />
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
@@ -293,7 +320,7 @@
                     </group>
                     <notebook>
                         <page string="Backlogs">
-                            <field name="sprint_backlog_ids" widget="many2many">
+                            <field name="sprint_backlog_ids" widget="many2many" domain="[('project_id','=',project_id)]">
                                 <tree>
                                     <field name="name" />
                                     <field name="name_backlog" />
@@ -434,7 +461,7 @@
         <field name="name">scrum_task.view.tree</field>
         <field name="model">scrum.task</field>
         <field name="arch" type="xml">
-            <tree string="Scrum Tasks" create="false">
+            <tree string="Scrum Tasks">
                 <field name="name" />
                 <field name="state" />
                 <field name="backlog_id" />

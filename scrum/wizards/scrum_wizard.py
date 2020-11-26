@@ -22,22 +22,38 @@ class CreateProductBacklog(models.TransientModel):
     # Thuộc tính bảng Create Product Backlog
     project_id = fields.Many2one('scrum.project',string="Project")
     name_backlog = fields.Char(string="Name",required=True)
- 
 class CreateSprint(models.TransientModel):
     _name='create.sprint'
     # Phương thức Create Sprint
     def create_sprint(self):
-        vals={
+        vals = self.env['sprint.sprint'].create({
             'project_id':self.project_id.id,
-            'sprint_backlog_ids':self.sprint_backlog_ids
-        }
-        self.env['sprint.sprint'].create(vals)
+            'sprint_backlog_ids':[(6,0,self.sprint_backlog_ids.ids)]
+        })
     # Phương thức chỉ lấy các Product Backlog thuộc cùng một Project với Sprint
     @api.onchange('project_id')
     def onchange_project_id(self):
         for rec in self:
-            return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id)]}}
+            return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id),('sprint_id','=',False)]}}
     # Thuộc tính bảng Create Sprint
     project_id = fields.Many2one('scrum.project',string="Project")
     # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
-    sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Product Backlog")
+    sprint_backlog_ids = fields.Many2many('product.backlog',string="Product Backlog")
+class CreateTask(models.TransientModel):
+    _name='create.task'
+    # Phương thức Create Task
+    def create_task(self):
+        vals={
+            'backlog_id':self.backlog_id.id,
+            'name':self.name
+        }
+        self.env['scrum.task'].create(vals)
+    # @api.model
+    # def default_get():
+    #     'context': {'default_backlog_id':backlog_id}
+    # Thuộc tính bảng Create Task
+    name =fields.Char(string="Tên Task",required=True)
+    # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
+    backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
+
+    

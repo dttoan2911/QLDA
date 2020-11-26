@@ -33,8 +33,8 @@ class ScrumProject(models.Model):
             'type': 'ir.actions.act_window',
         }
     # Thuộc tính bảng Scrum Project
-    name=fields.Char("Tên Project",required="True")
-    is_scrum = fields.Boolean(string="Template Scrum")
+    name=fields.Char(string="Tên Project",required="True")
+    is_scrum = fields.Boolean(string="Template Scrum",default=True)
     # Thuộc tính đếm các Product Backlog
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
     # Thuộc tính đếm các Sprint
@@ -42,7 +42,7 @@ class ScrumProject(models.Model):
     # Thuộc tính lấy các Product Backlog của riêng Project
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
-    project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint")
+    project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint",)
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -100,7 +100,7 @@ class ProductBacklog(models.Model):
     # Thuộc tính đếm các Task trong Product Backlog
     task_count = fields.Integer(string="Task Count",compute='get_task_count')
     # Quan hệ cha con với bảng Sprint: Một Product Backlog chỉ được nằm trong một Sprint
-    sprint_id = fields.Many2one('sprint.sprint',ondelete="set null")
+    sprint_id = fields.Many2one('sprint.sprint',string="Sprint ID",ondelete="set null")
     # Quan hệ cha con với bảng Scrum Task: Một Product Backlog có ít nhất 0 hoặc nhiều Task
     task_id = fields.One2many('scrum.task','backlog_id',string="Task ID")
     # Quan hệ một một với bảng Scrum Project: Một Product Backlog chỉ được nằm trong một Scrum Project
@@ -156,6 +156,13 @@ class Sprint(models.Model):
     def action_complete_sprint(self):
         for rec in self:
             rec.state = 'complete'
+            return {
+                'effect':{
+                    'fadeout':'slow',
+                    'message':'Sprint Complete',
+                    'type':'rainbow_man',
+                }
+            }
     # Phương thức kiểm tra không được xóa Sprint khi đang ở trạng thái Start
     def unlink(self):
         for rec in self:
@@ -166,7 +173,7 @@ class Sprint(models.Model):
     @api.onchange('project_id')
     def onchange_project_id(self):
         for rec in self:
-            return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id)]}}
+            return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id),('sprint_id','=',False)]}}
     # Thuộc tính bảng Sprint
     name = fields.Char(string="Sprint Name",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     sprint_goal = fields.Text(string="Sprint Goal")
