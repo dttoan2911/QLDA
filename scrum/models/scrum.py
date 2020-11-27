@@ -42,7 +42,7 @@ class ScrumProject(models.Model):
     # Thuộc tính lấy các Product Backlog của riêng Project
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
-    project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint",)
+    project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint")
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -62,6 +62,7 @@ class ProductBacklog(models.Model):
             'view_id': False,
             'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
+            'context':{'default_backlog_id':self.id},
         }
     # Phương thức tự động tạo chuỗi và tăng ID cho thuộc tính name
     @api.model
@@ -185,6 +186,8 @@ class Sprint(models.Model):
         ('start','Start'),
         ('complete','Complete')
     ],default="draft",string="Trạng thái",track_visibility='always')
+    review_note=fields.Text(string="Review Note")
+    retrospective_note=fields.Text(string="Retrospective Note")
     # Thuộc tính đếm các Product Backlog trong một Sprint
     backlog_count = fields.Integer(string="Backlog Count",compute='get_backlog_count')
     # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
@@ -204,13 +207,16 @@ class ScrumTeam(models.Model):
 class Task(models.Model):
     _name = 'scrum.task'
     _description = "Các Task nằm trong một Product Backlog"
+    # Phương thức hiển thị tất cả cột state trong Kanban
+    def _expand_states(self, states, domain, order):
+        return [key for key, val in type(self).state.selection]
     # Thuộc tính bảng Task
     name =fields.Char(string="Tên Task",required=True)
     state = fields.Selection([
         ('todo','To do'),
         ('inprogress','In Progress'),
         ('done','Done')
-    ],default="todo",string="Trạng thái",track_visibility='always')
+    ],default="todo",string="Trạng thái",group_expand='_expand_states',track_visibility='always')
     # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
     backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
 # from odoo.exceptions import UserError

@@ -39,21 +39,5 @@ class CreateSprint(models.TransientModel):
     project_id = fields.Many2one('scrum.project',string="Project")
     # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
     sprint_backlog_ids = fields.Many2many('product.backlog',string="Product Backlog")
-class CreateTask(models.TransientModel):
-    _name='create.task'
-    # Phương thức Create Task
-    def create_task(self):
-        vals={
-            'backlog_id':self.backlog_id.id,
-            'name':self.name
-        }
-        self.env['scrum.task'].create(vals)
-    # @api.model
-    # def default_get():
-    #     'context': {'default_backlog_id':backlog_id}
-    # Thuộc tính bảng Create Task
-    name =fields.Char(string="Tên Task",required=True)
-    # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
-    backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
 
     

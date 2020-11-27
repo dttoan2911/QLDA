@@ -31,6 +31,8 @@
         'wizards/scrum_wizard.xml',
         'views/scrum.xml',
         'views/sequence.xml',
+        'reports/report.xml',
+        'reports/scrum_project.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
