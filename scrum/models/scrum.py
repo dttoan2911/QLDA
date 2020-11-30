@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
@@ -83,6 +84,14 @@ class ProductBacklog(models.Model):
     #     for rec in self:
     #         if rec.project_id:
     #             rec.project_id = rec.project_id.name
+    # Phương thức kiểm tra trạng thái product backlog
+    @api.onchange('state')
+    def _status_check(self):
+        for rec in self:
+            if rec.state == 'done':
+                for task in rec.task_id:
+                    if task.state != 'done':
+                        raise UserError("Các task phải ở trạng thái done")
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Name",required=True)
@@ -155,15 +164,23 @@ class Sprint(models.Model):
             rec.state = 'start'
     # Phương thức chuyển đổi trạng thái thành complete
     def action_complete_sprint(self):
-        for rec in self:
-            rec.state = 'complete'
-            return {
-                'effect':{
-                    'fadeout':'slow',
-                    'message':'Sprint Complete',
-                    'type':'rainbow_man',
-                }
-            }
+        count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
+        if count ==0:
+            raise UserError("Không có backlog nào")
+        else: 
+            for rec in self:
+                for backlog in rec.sprint_backlog_ids:
+                    if backlog.state != 'done':
+                        raise UserError("Các backlog phải ở trạng thái done")
+                    else:   
+                        rec.state = 'complete'
+                        return {
+                        'effect':{
+                        'fadeout':'slow',
+                        'message':'Sprint Complete',
+                        'type':'rainbow_man',
+                        }
+                        }
     # Phương thức kiểm tra không được xóa Sprint khi đang ở trạng thái Start
     def unlink(self):
         for rec in self:
