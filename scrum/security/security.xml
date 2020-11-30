@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phân quyền người dùng -->
+<odoo>
+    <!-- <data noupdate="0">
+
+        <record id="group_scrum_product_owner" model="res.groups">
+            <field name="name">Product Owner</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record model="ir.rule" id="scrum_backlog_rule">
+            <field name="name">Project: multi-company</field>
+            <field name="model_id" ref="model_scrum_backlog"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[
+                                            ('name', '!=', 'root')
+                                        ]</field>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+    </data> -->
+    <record id="module_category_scrum" model="ir.module.category">
+        <field name="name">Scrum</field>
+        <field name="description">Category For Scrum</field>
+        <field name="sequence">96</field>
+    </record>
+    <record id="group_scrum_development_team" model="res.groups">
+        <field name="name">Development Team</field>
+        <field name="category_id" ref="module_category_scrum" />
+    </record>
+    <record id="group_scrum_product_owner" model="res.groups">
+        <field name="name">Product Owner</field>
+        <field name="category_id" ref="module_category_scrum" />
+        <!-- <field name="implied_ids" eval="[(4,ref('group_scrum_development_team'))]" /> -->
+    </record>
+    <!-- <record model="ir.rule" id="sprint_development_team_record_rule">
+        <field name="name">See Only Your Sprint</field>
+        <field name="model_id" ref="model_sprint_sprint" />
+        <field name="domain_force">[('user_sprint_id.user_id','=',user.id)]</field>
+        <field name="groups" eval="[(4,ref('group_scrum_development_team'))]" />
+    </record> -->
+    <!-- <record model="ir.rule" id="sprint_product_owner_record_rule">
+        <field name="name">See All Sprint</field>
+        <field name="model_id" ref="model_sprint_sprint" />
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="[(4,ref('group_scrum_product_owner'))]" />
+    </record> -->
+</odoo>

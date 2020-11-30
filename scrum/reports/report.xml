@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<report
+    id="action_report_scrum_project"
+    model="scrum.project"
+    string="Bảng báo cáo tổng thể"
+    report_type="qweb-pdf"
+    name="scrum.report_scrum_project"
+    file="scrum.report_scrum_project"
+/>
+
+<report
+    id="action_report_scrum_project_detail"
+    model="scrum.project"
+    string="Bảng báo cáo chi tiết"
+    report_type="qweb-pdf"
+    name="scrum.report_scrum_project_detail"
+    file="scrum.report_scrum_project_detail"
+/>
+
+</odoo>

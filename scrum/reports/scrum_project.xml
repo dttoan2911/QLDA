@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- <template id="report_scrum_projects">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <h2>Scrum Project</h2>
+            </t>
+        </t>
+    </template> -->
+
+    <template id="report_scrum_project">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Báo cáo tổng thể</h2>
+                        Tên Project:
+                        <t t-esc="doc.name" />
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

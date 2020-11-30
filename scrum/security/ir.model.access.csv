@@ -1,5 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_scrum_project,access.scrum.project,model_scrum_project,,1,1,1,1
-access_product_backlog,access.product.backlog,model_product_backlog,,1,1,1,1
+access_scrum_project_po,access.scrum.project_po,model_scrum_project,group_scrum_product_owner,1,1,1,1
+access_scrum_project_dt,access.scrum.project_dt,model_scrum_project,group_scrum_development_team,1,0,0,0
+access_product_backlog_po,access.product.backlog.po,model_product_backlog,group_scrum_product_owner,1,1,1,1
+access_product_backlog_dt,access.product.backlog.dt,model_product_backlog,group_scrum_development_team,1,0,0,0
 access_sprint_sprint,access.sprint.sprint,model_sprint_sprint,,1,1,1,1
-access_one_2_many,access.one.2.many,model_one_2_many,,1,1,1,1
+access_scrum_team,access.scrum.team,model_scrum_team,,1,1,1,1
+access_scrum_task_po,access.scrum.task.po,model_scrum_task,group_scrum_product_owner,1,0,0,0
+access_scrum_task_dt,access.scrum.task_dt,model_scrum_task,group_scrum_development_team,1,1,1,1
