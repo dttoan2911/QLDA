@@ -93,8 +93,8 @@ class ProductBacklog(models.Model):
                     if task.state != 'done':
                         raise UserError("Các task phải ở trạng thái done")
     # Thuộc tính bảng Product Backlog
-    name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
-    name_backlog = fields.Char(string="Name",required=True)
+    name = fields.Char(string="Số thứ tự",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
+    name_backlog = fields.Char(string="Tên Product Backlog",required=True)
     state = fields.Selection([
         ('draft','Draft'),
         ('confirm','Confirm'),
@@ -108,13 +108,13 @@ class ProductBacklog(models.Model):
     storypoint = fields.Integer(string="Story Point")
     attachment = fields.Binary(string="Đính kèm tệp",attachment=True)
     # Thuộc tính đếm các Task trong Product Backlog
-    task_count = fields.Integer(string="Task Count",compute='get_task_count')
+    task_count = fields.Integer(string="Đếm Task",compute='get_task_count')
     # Quan hệ cha con với bảng Sprint: Một Product Backlog chỉ được nằm trong một Sprint
     sprint_id = fields.Many2one('sprint.sprint',string="Sprint ID",ondelete="set null")
     # Quan hệ cha con với bảng Scrum Task: Một Product Backlog có ít nhất 0 hoặc nhiều Task
     task_id = fields.One2many('scrum.task','backlog_id',string="Task ID")
     # Quan hệ một một với bảng Scrum Project: Một Product Backlog chỉ được nằm trong một Scrum Project
-    project_id = fields.Many2one('scrum.project',string="Tên Project")
+    project_id = fields.Many2one('scrum.project',string="Tên Dự Án")
 class Sprint(models.Model):
     _name = 'sprint.sprint'
     _description = "Sprint"
@@ -193,7 +193,7 @@ class Sprint(models.Model):
         for rec in self:
             return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id),('sprint_id','=',False)]}}
     # Thuộc tính bảng Sprint
-    name = fields.Char(string="Sprint Name",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
+    name = fields.Char(string="Tên Sprint",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     sprint_goal = fields.Text(string="Sprint Goal")
     define_of_done = fields.Text(string="Define of done")
     start_date = fields.Date(string="Ngày bắt đầu")
@@ -206,19 +206,19 @@ class Sprint(models.Model):
     review_note=fields.Text(string="Review Note")
     retrospective_note=fields.Text(string="Retrospective Note")
     # Thuộc tính đếm các Product Backlog trong một Sprint
-    backlog_count = fields.Integer(string="Backlog Count",compute='get_backlog_count')
+    backlog_count = fields.Integer(string="Đếm Product Backlog",compute='get_backlog_count')
     # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
     sprint_backlog_ids = fields.One2many('product.backlog','sprint_id',string="Product Backlog")
     # Quan hệ cha con với bảng Scrum Team: Chưa rõ phần này
     user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
     # Quan hệ cha con với bảng Project
-    project_id = fields.Many2one('scrum.project',string="Project")
+    project_id = fields.Many2one('scrum.project',string="Dự Án")
 class ScrumTeam(models.Model):
     _name='scrum.team'
     _inherit = ['mail.thread','mail.activity.mixin']
     _description="Những người dùng tham gia Scrum Project"
     # Thuộc tính bảng Scrum Team
-    name = fields.Char(string="Name",required="True")
+    name = fields.Char(string="Tên Scrum Team",required="True")
     # Quan hệ cha con với bảng Users: Chưa rõ phần này
     user_id = fields.Many2one('res.users',string="Tên tài khoản",track_visibility='always')
 class Task(models.Model):
