@@ -35,7 +35,7 @@ class ScrumProject(models.Model):
         }
     # Thuộc tính bảng Scrum Project
     name=fields.Char(string="Tên Project",required="True")
-    is_scrum = fields.Boolean(string="Template Scrum",default=True)
+    is_scrum = fields.Boolean(string="Mẫu Scrum",default=True)
     # Thuộc tính đếm các Product Backlog
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
     # Thuộc tính đếm các Sprint
