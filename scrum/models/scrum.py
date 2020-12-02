@@ -92,6 +92,11 @@ class ProductBacklog(models.Model):
                 for task in rec.task_id:
                     if task.state != 'done':
                         raise UserError("Các task phải ở trạng thái done")
+    # Phương thức kiểm tra không cho thay đổi pb với sprint đang chạy
+    @api.onchange('sprint_id')
+    def sprint_check(self):
+        if self._origin.sprint_id.state == 'start':
+            raise UserError("%s đã ở trạng thái start, không thể thay đổi" %(str(self._origin.sprint_id.name)))
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Name",required=True)
@@ -160,8 +165,18 @@ class Sprint(models.Model):
                 raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
     # Phương thức chuyển đổi trạng thái thành start
     def action_start_sprint(self):
+        count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
         for rec in self:
-            rec.state = 'start'
+            if rec.sprint_goal == False:
+                raise UserError("Bạn phải nhập sprint goal")
+            elif count == 0:
+                raise UserError("Không có Product Backlog nào")
+            else:
+                for pb in rec.sprint_backlog_ids:
+                    if not pb.task_id:
+                        raise UserError("Product Backlog này không có task nào")
+                    else:
+                         rec.state = 'start'
     # Phương thức chuyển đổi trạng thái thành complete
     def action_complete_sprint(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
