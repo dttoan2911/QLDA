@@ -20,8 +20,8 @@ class CreateProductBacklog(models.TransientModel):
         }
         self.env['product.backlog'].create(vals)
     # Thuộc tính bảng Create Product Backlog
-    project_id = fields.Many2one('scrum.project',string="Project")
-    name_backlog = fields.Char(string="Name",required=True)
+    project_id = fields.Many2one('scrum.project',string="Dự Án")
+    name_backlog = fields.Char(string="Tên Product Backlog",required=True)
 class CreateSprint(models.TransientModel):
     _name='create.sprint'
     # Phương thức Create Sprint
@@ -36,7 +36,7 @@ class CreateSprint(models.TransientModel):
         for rec in self:
             return {'domain':{'sprint_backlog_ids':[('project_id','=',rec.project_id.id),('sprint_id','=',False)]}}
     # Thuộc tính bảng Create Sprint
-    project_id = fields.Many2one('scrum.project',string="Project")
+    project_id = fields.Many2one('scrum.project',string="Dự Án")
     # Quan hệ cha con với bảng Product Backlog: Một Sprint sẽ có ít nhất 0 hoặc nhiều Product Backlog
     sprint_backlog_ids = fields.Many2many('product.backlog',string="Product Backlog")
 
