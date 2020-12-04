@@ -9,7 +9,7 @@
         </t>
     </template> -->
 
-    <template id="report_scrum_project">
+    <!-- <template id="report_scrum_project">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
@@ -17,6 +17,73 @@
                         <h2>Báo cáo tổng thể</h2>
                         Tên Project:
                         <t t-esc="doc.name" />
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template> -->
+
+    <!-- <template id="report_scrum_project">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <div class="oe_structure" />
+                        <div class="row">
+                            <div class="col-xs-2" style="margin:auto;" />
+                            <center>
+                                <div class="col-xs-8" style="margin:auto">
+                                    <table class="table table-condensed" style="border: 3px solid black !important;">
+                                        <tr>
+                                            <td width="40%">
+                                                <p style="text-align:center;">
+                                                    <h2>
+                                                        <strong>
+                                                            <span t-field="doc.name" />
+                                                        </strong>
+                                                    </h2>
+                                                </p>
+                                            </td>
+                                            <td width="60%">
+
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </center>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template> -->
+
+    <template id="report_scrum_project">
+        <style>
+            table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+              }
+              th, td {
+                padding: 5px;
+                text-align: left;    
+              }
+        </style>
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Báo cáo tổng thể</h2>
+                        <table style="width:100%">
+                            <tr>
+                                <th>Tên Project:</th>
+                                <td><t t-esc="doc.name"/></td>
+                            </tr>
+                        </table>
                     </div>
                 </t>
             </t>
