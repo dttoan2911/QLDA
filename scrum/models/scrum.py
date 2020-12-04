@@ -33,6 +33,26 @@ class ScrumProject(models.Model):
             'view_mode': 'tree,form,graph',
             'type': 'ir.actions.act_window',
         }
+    # Phương thức lấy Task của một Project
+    def test_get_task(self):
+        for rec in self:
+            print("Tasks")
+            table_pb = self.env['product.backlog']
+            get_pb = table_pb.search([('project_id','=',self.id)])
+            get_task = get_pb.mapped('task_id')
+            self.task_count = len(get_task)
+    # Phương thức trỏ đến các Task của một Project
+    # BUG: CHỈ LẤY ĐƯỢC TASK CỦA MỘT PRODUCT BACKLOG
+    def open_task(self):
+        return{
+            'name': _('Task'),
+            'domain':[('backlog_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'scrum.task',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
     # Thuộc tính bảng Scrum Project
     name=fields.Char(string="Tên Project",required="True")
     is_scrum = fields.Boolean(string="Template Scrum",default=True)
@@ -40,6 +60,8 @@ class ScrumProject(models.Model):
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
     # Thuộc tính đếm các Sprint
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
+    # Thuộc tính đếm các Task của một Project
+    task_count = fields.Integer(string="Task Count",compute='test_get_task')
     # Thuộc tính lấy các Product Backlog của riêng Project
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
@@ -97,9 +119,6 @@ class ProductBacklog(models.Model):
     def sprint_check(self):
         if self._origin.sprint_id.state == 'start':
             raise UserError("%s đã ở trạng thái start, không thể thay đổi" %(str(self._origin.sprint_id.name)))
-    # Thuộc tính bảng Product Backlog
-    name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
-    name_backlog = fields.Char(string="Name",required=True)
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="Số thứ tự",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Tên Product Backlog",required=True)
@@ -179,7 +198,7 @@ class Sprint(models.Model):
                     if not pb.task_id:
                         raise UserError("Product Backlog này không có task nào")
                     else:
-                         rec.state = 'start'
+                        rec.state = 'start'
     # Phương thức chuyển đổi trạng thái thành complete
     def action_complete_sprint(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
@@ -194,10 +213,10 @@ class Sprint(models.Model):
                         rec.state = 'complete'
                         return {
                         'effect':{
-                        'fadeout':'slow',
-                        'message':'Sprint Complete',
-                        'type':'rainbow_man',
-                        }
+                            'fadeout':'slow',
+                            'message':'Sprint Complete',
+                            'type':'rainbow_man',
+                            }
                         }
     # Phương thức kiểm tra không được xóa Sprint khi đang ở trạng thái Start
     def unlink(self):
@@ -254,6 +273,8 @@ class Task(models.Model):
     ],default="todo",string="Trạng thái",group_expand='_expand_states',track_visibility='always')
     # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
     backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
+    # Quan hệ cha con với bảng Users: Chưa rõ phần này
+    user_id = fields.Many2one('scrum.team',string="Tên trong Scrum",track_visibility='always')
 # from odoo.exceptions import UserError
 # class ProductBacklog(models.Model):
     # _sql_constraints = [
