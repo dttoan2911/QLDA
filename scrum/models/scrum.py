@@ -34,19 +34,17 @@ class ScrumProject(models.Model):
             'type': 'ir.actions.act_window',
         }
     # Phương thức lấy Task của một Project
-    def test_get_task(self):
-        for rec in self:
-            print("Tasks")
-            table_pb = self.env['product.backlog']
-            get_pb = table_pb.search([('project_id','=',self.id)])
-            get_task = get_pb.mapped('task_id')
-            self.task_count = len(get_task)
+    def get_task(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        get_task = get_pb.mapped('task_id')
+        self.task_count = len(get_task)
     # Phương thức trỏ đến các Task của một Project
-    # BUG: CHỈ LẤY ĐƯỢC TASK CỦA MỘT PRODUCT BACKLOG
     def open_task(self):
+        get_task = self.project_backlog_ids.mapped('task_id')
         return{
             'name': _('Task'),
-            'domain':[('backlog_id','=',self.id)],
+            'domain':[('id','in',get_task.ids)],
             'view_type': 'form',
             'res_model': 'scrum.task',
             'view_id': False,
@@ -61,7 +59,7 @@ class ScrumProject(models.Model):
     # Thuộc tính đếm các Sprint
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
     # Thuộc tính đếm các Task của một Project
-    task_count = fields.Integer(string="Task Count",compute='test_get_task')
+    task_count = fields.Integer(string="Task Count",compute='get_task')
     # Thuộc tính lấy các Product Backlog của riêng Project
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
@@ -274,7 +272,7 @@ class Task(models.Model):
     # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
     backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
     # Quan hệ cha con với bảng Users: Chưa rõ phần này
-    user_id = fields.Many2one('scrum.team',string="Tên trong Scrum",track_visibility='always')
+    user_id = fields.Many2one('scrum.team',string="Tên tài khoản",track_visibility='always')
 # from odoo.exceptions import UserError
 # class ProductBacklog(models.Model):
     # _sql_constraints = [
