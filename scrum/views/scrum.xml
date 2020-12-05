@@ -381,14 +381,24 @@
             </tree>
         </field>
     </record>
+    <!-- pivot view of the Sprint model -->
+    <record id="sprint_sprint_view_pivot" model="ir.ui.view">
+        <field name="name">sprint.sprint.view.pivot</field>
+        <field name="model">sprint.sprint</field>
+        <field name="arch" type="xml">
+            <pivot string="Sprint" disable_linking="true">
+                <field name="name" type="row" />
+                <field name="state" type="col" />
+            </pivot>
+        </field>
+    </record>
     <!-- graph view of the Sprint model -->
     <record id="sprint_sprint_view_graph" model="ir.ui.view">
         <field name="name">sprint.sprint.view.graph</field>
         <field name="model">sprint.sprint</field>
         <field name="arch" type="xml">
-            <graph string="Sprint Graph" type="pie">
-                <field name="user_sprint_id" />
-                <field name="state" type="measure"/>
+            <graph string="Sprint Graph">
+                <field name="state" />
             </graph>
         </field>
     </record>

@@ -30,7 +30,7 @@ class ScrumProject(models.Model):
             'view_type': 'form',
             'res_model': 'sprint.sprint',
             'view_id': False,
-            'view_mode': 'tree,form,graph',
+            'view_mode': 'tree,form,pivot,graph',
             'type': 'ir.actions.act_window',
         }
     # Phương thức lấy Task của một Project
