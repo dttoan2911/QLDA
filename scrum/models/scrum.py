@@ -100,6 +100,9 @@ class ScrumProject(models.Model):
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
     project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint")
+    # Thuộc tính lấy các Task của riêng Project
+    # BUG: Chỉ lấy được Task của một PB đầu tiên
+    project_task_ids = fields.One2many('scrum.task','backlog_id',domain=lambda self: [('id','in',self.project_backlog_ids.mapped('task_id').ids)])
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -135,11 +138,6 @@ class ProductBacklog(models.Model):
     # Phương thức hiển thị tất cả cột state trong Kanban
     def _expand_states(self, states, domain, order):
         return [key for key, val in type(self).state.selection]
-    # @api.onchange('project_id')
-    # def set_project_id(self):
-    #     for rec in self:
-    #         if rec.project_id:
-    #             rec.project_id = rec.project_id.name
     # Phương thức kiểm tra trạng thái product backlog
     @api.onchange('state')
     def _status_check(self):

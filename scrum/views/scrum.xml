@@ -60,8 +60,9 @@
                                 </tree>
                             </field>
                         </page> -->
-                        <!-- <page string="Task">
-                        </page> -->
+                        <page string="Task">
+                            <field name="project_task_ids" />
+                        </page>
                     </notebook>
                 </sheet>
             </form>
