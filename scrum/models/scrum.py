@@ -3,7 +3,22 @@ from odoo.exceptions import UserError, ValidationError
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
-    # Phương thức đếm các Product Backlog
+    # Phương thức đếm các Product Backlog: Draft, Confirm, Done, Total
+    def get_product_backlog_draft_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="draft")
+        self.backlog_draft_count = len(fil_state)
+    def get_product_backlog_confirm_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="confirm")
+        self.backlog_confirm_count = len(fil_state)
+    def get_product_backlog_done_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="done")
+        self.backlog_done_count = len(fil_state)
     def get_product_backlog_count(self):
         count = self.env['product.backlog'].search_count([('project_id','=',self.id)])
         self.backlog_count = count
@@ -18,7 +33,22 @@ class ScrumProject(models.Model):
             'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
         }
-    # Phương thức đếm các Sprint
+    # Phương thức đếm các Sprint:Draft,Start,Done,Total
+    def get_sprint_draft_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="draft")
+        self.sprint_draft_count = len(fil_state)
+    def get_sprint_start_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="start")
+        self.sprint_start_count = len(fil_state)
+    def get_sprint_done_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="done")
+        self.sprint_done_count = len(fil_state)
     def get_sprint_count(self):
         count = self.env['sprint.sprint'].search_count([('project_id','=',self.id)])
         self.sprint_count = count
@@ -54,9 +84,15 @@ class ScrumProject(models.Model):
     # Thuộc tính bảng Scrum Project
     name=fields.Char(string="Tên Project",required="True")
     is_scrum = fields.Boolean(string="Template Scrum",default=True)
-    # Thuộc tính đếm các Product Backlog
+    # Thuộc tính đếm các Product Backlog: Draft, Confirm, Done, Total
+    backlog_draft_count = fields.Integer(string="Product Backlog Draft Count",compute='get_product_backlog_draft_count')
+    backlog_confirm_count = fields.Integer(string="Product Backlog Confirm Count",compute='get_product_backlog_confirm_count')
+    backlog_done_count = fields.Integer(string="Product Backlog Done Count",compute='get_product_backlog_done_count')
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
-    # Thuộc tính đếm các Sprint
+    # Thuộc tính đếm các Sprint:Draft,Start,Done,Total
+    sprint_draft_count = fields.Integer("Sprint Draft Count",compute='get_sprint_draft_count')
+    sprint_start_count = fields.Integer("Sprint Start Count",compute='get_sprint_start_count')
+    sprint_done_count = fields.Integer("Sprint Done Count",compute='get_sprint_done_count')
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
     # Thuộc tính đếm các Task của một Project
     task_count = fields.Integer(string="Task Count",compute='get_task')

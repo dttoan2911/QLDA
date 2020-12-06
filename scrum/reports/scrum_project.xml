@@ -64,25 +64,69 @@
 
     <template id="report_scrum_project">
         <style>
-            table, th, td {
+            table, td, th {
                 border: 1px solid black;
+            }
+            table.stable {
+                width: 50%;
                 border-collapse: collapse;
-              }
-              th, td {
-                padding: 5px;
-                text-align: left;    
-              }
+            }
+            th, td {
+                padding: 10px;
+            }
+            table.center {
+                margin-left: auto; 
+                margin-right: auto;
+            }
         </style>
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
                     <div class="page">
                         <h2>Báo cáo tổng thể</h2>
-                        <table style="width:100%">
+                        <table style="stable center">
                             <tr>
                                 <th>Tên Project:</th>
-                                <td><t t-esc="doc.name"/></td>
+                                <th colspan="2"><t t-esc="doc.name"/></th>
                             </tr>
+                            <!-- Sprint -->
+                            <tr>
+                                <td rowspan="4">Sprint</td>
+                                <td>Draft</td>
+                                <td><t t-esc="doc.sprint_draft_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Start</td>
+                                <td><t t-esc="doc.sprint_start_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Done</td>
+                                <td><t t-esc="doc.sprint_done_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td><t t-esc="doc.sprint_count"/></td>
+                            </tr>
+                            <!-- /Sprint -->
+                            <!-- Sprint Backlog -->
+                            <tr>
+                                <td rowspan="4">Sprint Backlog</td>
+                                <td>Draft</td>
+                                <td><t t-esc="doc.backlog_draft_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Confirm</td>
+                                <td><t t-esc="doc.backlog_confirm_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Done</td>
+                                <td><t t-esc="doc.backlog_done_count"/></td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td><t t-esc="doc.backlog_count"/></td>
+                            </tr>
+                            <!-- /Sprint Backlog -->
                         </table>
                     </div>
                 </t>
