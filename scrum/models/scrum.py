@@ -101,8 +101,7 @@ class ScrumProject(models.Model):
     # Thuộc tính lấy các Sprint của riêng Project
     project_sprint_ids = fields.One2many('sprint.sprint','project_id',string="Sprint")
     # Thuộc tính lấy các Task của riêng Project
-    # BUG: Chỉ lấy được Task của một PB đầu tiên
-    project_task_ids = fields.One2many('scrum.task','backlog_id',domain=lambda self: [('id','in',self.project_backlog_ids.mapped('task_id').ids)])
+    project_task_ids = fields.One2many('scrum.task','project_id',string="Tasks")
 class ProductBacklog(models.Model):
     _name = 'product.backlog'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -307,43 +306,10 @@ class Task(models.Model):
     backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
     # Quan hệ cha con với bảng Users: Chưa rõ phần này
     user_id = fields.Many2one('scrum.team',string="Tên tài khoản",track_visibility='always')
-# from odoo.exceptions import UserError
-# class ProductBacklog(models.Model):
-    # _sql_constraints = [
-    #     ('nho_hon_0', 'check(value<0)', 'khong duoc nhap gia tri lon hon 0'),
-    # ]
-    # @api.constrains('name')
-    # def _check_name(self):
-    #     action=self.env['ir.actions.act_window'].create({
-    #         'name': '',
-    #         'view_ids': [
-    #             (5, 0 , 0),
-    #             (0, 0, {
-    #                 'view_mode': 'kanban',
-    #             })
-    #         ]
-    #     })
-    #     self.env['ir.actions.view'].create({
-    #         'view_mode': 'kanban',
-    #         'act_action_id': action.id
-    #     })
-    #     for backlog in self:
-    # def unlink(self):
-    #     for backlog in self:
-    #         if backlog.name == 'root':
-    #             raise UserError(_("Ban ko duoc phep xoa backlog ten 'root'"))
-    #     return super(Backlog, self).unlink()
-    # sprint_count = fields.Integer(compute='_compute_sprint_count')
-    # def _compute_sprint_count(self):
-    #     count =0
-    #     for project in self:
-    #         count +=1
-    #     project.sprint_count = count
-    # Mối quan hệ 1-1 với Scrum Project
-    # Phương thức lấy tự động ID Project
+    # Quan hệ với bảng Scrum Project
+    # BUG: Chưa get default_project_id hiện tại khi tạo một Task
     # @api.model
-    # def create(self,vals):
-    #     res = super(ProductBacklog, self).create(vals)
-    #     self.env['scrum.project'].search([('project_id', '=', False)]).write({'project_id':res.id})
-    #     return res
-    # project_id = fields.Many2one('scrum.project',string="Tên Project",index=True,ondelete="cascade",default=create)
+    # def _default_project_id(self):
+    #     return self.env['scrum.project'].search([], limit=1)
+    # project_id = fields.Many2one('scrum.project',string="Project",default=_default_project_id)
+    project_id = fields.Many2one('scrum.project',string="Project")
