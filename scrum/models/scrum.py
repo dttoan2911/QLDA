@@ -3,7 +3,22 @@ from odoo.exceptions import UserError, ValidationError
 
 class ScrumProject(models.Model):
     _name = 'scrum.project'
-    # Phương thức đếm các Product Backlog
+    # Phương thức đếm các Product Backlog: Draft, Confirm, Done, Total
+    def get_product_backlog_draft_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="draft")
+        self.backlog_draft_count = len(fil_state)
+    def get_product_backlog_confirm_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="confirm")
+        self.backlog_confirm_count = len(fil_state)
+    def get_product_backlog_done_count(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        fil_state = get_pb.filtered(lambda r: r.state=="done")
+        self.backlog_done_count = len(fil_state)
     def get_product_backlog_count(self):
         count = self.env['product.backlog'].search_count([('project_id','=',self.id)])
         self.backlog_count = count
@@ -18,7 +33,22 @@ class ScrumProject(models.Model):
             'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
         }
-    # Phương thức đếm các Sprint
+    # Phương thức đếm các Sprint:Draft,Start,Done,Total
+    def get_sprint_draft_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="draft")
+        self.sprint_draft_count = len(fil_state)
+    def get_sprint_start_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="start")
+        self.sprint_start_count = len(fil_state)
+    def get_sprint_done_count(self):
+        table_sp = self.env['sprint.sprint']
+        get_sp = table_sp.search([('project_id','=',self.id)])
+        fil_state = get_sp.filtered(lambda r: r.state=="done")
+        self.sprint_done_count = len(fil_state)
     def get_sprint_count(self):
         count = self.env['sprint.sprint'].search_count([('project_id','=',self.id)])
         self.sprint_count = count
@@ -30,16 +60,42 @@ class ScrumProject(models.Model):
             'view_type': 'form',
             'res_model': 'sprint.sprint',
             'view_id': False,
-            'view_mode': 'tree,form,graph',
+            'view_mode': 'tree,form,pivot,graph',
+            'type': 'ir.actions.act_window',
+        }
+    # Phương thức lấy Task của một Project
+    def get_task(self):
+        table_pb = self.env['product.backlog']
+        get_pb = table_pb.search([('project_id','=',self.id)])
+        get_task = get_pb.mapped('task_id')
+        self.task_count = len(get_task)
+    # Phương thức trỏ đến các Task của một Project
+    def open_task(self):
+        get_task = self.project_backlog_ids.mapped('task_id')
+        return{
+            'name': _('Task'),
+            'domain':[('id','in',get_task.ids)],
+            'view_type': 'form',
+            'res_model': 'scrum.task',
+            'view_id': False,
+            'view_mode': 'tree,form',
             'type': 'ir.actions.act_window',
         }
     # Thuộc tính bảng Scrum Project
     name=fields.Char(string="Tên Project",required="True")
     is_scrum = fields.Boolean(string="Template Scrum",default=True)
-    # Thuộc tính đếm các Product Backlog
+    # Thuộc tính đếm các Product Backlog: Draft, Confirm, Done, Total
+    backlog_draft_count = fields.Integer(string="Product Backlog Draft Count",compute='get_product_backlog_draft_count')
+    backlog_confirm_count = fields.Integer(string="Product Backlog Confirm Count",compute='get_product_backlog_confirm_count')
+    backlog_done_count = fields.Integer(string="Product Backlog Done Count",compute='get_product_backlog_done_count')
     backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
-    # Thuộc tính đếm các Sprint
+    # Thuộc tính đếm các Sprint:Draft,Start,Done,Total
+    sprint_draft_count = fields.Integer("Sprint Draft Count",compute='get_sprint_draft_count')
+    sprint_start_count = fields.Integer("Sprint Start Count",compute='get_sprint_start_count')
+    sprint_done_count = fields.Integer("Sprint Done Count",compute='get_sprint_done_count')
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
+    # Thuộc tính đếm các Task của một Project
+    task_count = fields.Integer(string="Task Count",compute='get_task')
     # Thuộc tính lấy các Product Backlog của riêng Project
     project_backlog_ids = fields.One2many('product.backlog','project_id',string="Product Backlog")
     # Thuộc tính lấy các Sprint của riêng Project
@@ -97,9 +153,13 @@ class ProductBacklog(models.Model):
     def sprint_check(self):
         if self._origin.sprint_id.state == 'start':
             raise UserError("%s đã ở trạng thái start, không thể thay đổi" %(str(self._origin.sprint_id.name)))
-    # Thuộc tính bảng Product Backlog
-    name = fields.Char(string="#",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
-    name_backlog = fields.Char(string="Name",required=True)
+    # Phương thức kiểm tra không được xóa PB đang nằm trong sprint ở trạng thái start
+    def unlink(self):
+        for rec in self:
+            for sprint in rec.sprint_id:
+                if sprint.state =='start':
+                    raise UserError(_("Bạn không được phép xóa Backlog này vì nó đang nằm trong Sprint đã start"))
+            return super(ProductBacklog, self).unlink()
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="Số thứ tự",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Tên Product Backlog",required=True)
@@ -164,22 +224,28 @@ class Sprint(models.Model):
             flag = sprint.end_date - sprint.start_date
             if(flag.days<0):
                 raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
-            elif(flag.days>28):
-                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
+            elif(flag.days>35):
+                raise ValidationError(_('Thời hạn sprint không được vượt quá 5 tuần'))
     # Phương thức chuyển đổi trạng thái thành start
     def action_start_sprint(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
         for rec in self:
-            if rec.sprint_goal == False:
+            if not rec.sprint_goal:
                 raise UserError("Bạn phải nhập sprint goal")
+            elif not rec.define_of_done:
+                raise UserError("Bạn phải nhập Define of done")
             elif count == 0:
                 raise UserError("Không có Product Backlog nào")
+            elif not rec.start_date:
+                raise UserError("Bạn cần nhập ngày bắt đầu")
+            elif not rec.end_date:
+                raise UserError("Bạn cần nhập ngày kết thúc")
             else:
                 for pb in rec.sprint_backlog_ids:
                     if not pb.task_id:
-                        raise UserError("Product Backlog này không có task nào")
+                        raise UserError("Product Backlog không có task nào")
                     else:
-                         rec.state = 'start'
+                        rec.state = 'start'
     # Phương thức chuyển đổi trạng thái thành complete
     def action_complete_sprint(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
@@ -194,10 +260,10 @@ class Sprint(models.Model):
                         rec.state = 'complete'
                         return {
                         'effect':{
-                        'fadeout':'slow',
-                        'message':'Sprint Complete',
-                        'type':'rainbow_man',
-                        }
+                            'fadeout':'slow',
+                            'message':'Sprint Complete',
+                            'type':'rainbow_man',
+                            }
                         }
     # Phương thức kiểm tra không được xóa Sprint khi đang ở trạng thái Start
     def unlink(self):
@@ -205,6 +271,12 @@ class Sprint(models.Model):
             if rec.state == 'start':
                 raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
         return super(Sprint, self).unlink()
+    # Phương thức kiểm tra không được xóa PB khi sprint đang ở trạng thái Start
+    @api.onchange('sprint_backlog_ids')
+    def pb_sprint_check(self):
+        if self.state == 'start' and self._origin.sprint_backlog_ids:
+            if self.sprint_backlog_ids != self._origin.sprint_backlog_ids:
+                raise UserError(_("Bạn không được phép xóa Backlog đang nằm trong Sprint đang ở trạng thái 'Start'"))
     # Phương thức chỉ lấy các Product Backlog thuộc cùng một Project với Sprint
     @api.onchange('project_id')
     def onchange_project_id(self):
@@ -254,6 +326,8 @@ class Task(models.Model):
     ],default="todo",string="Trạng thái",group_expand='_expand_states',track_visibility='always')
     # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
     backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
+    # Quan hệ cha con với bảng Users: Chưa rõ phần này
+    user_id = fields.Many2one('scrum.team',string="Tên tài khoản",track_visibility='always')
 # from odoo.exceptions import UserError
 # class ProductBacklog(models.Model):
     # _sql_constraints = [

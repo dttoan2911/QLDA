@@ -13,12 +13,19 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt">
-                            <field name="backlog_count" string="Product Backlog" widget="statinfo" />
-                        </button>
-                        <button name="open_sprint" type="object" class="oe_stat_button" icon="fa-list-alt">
-                            <field name="sprint_count" string="Sprint" widget="statinfo" />
-                        </button>
+                        <div>
+                            <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt">
+                                <field name="backlog_count" string="Product Backlog" widget="statinfo" />
+                            </button>
+                            <button name="open_sprint" type="object" class="oe_stat_button" icon="fa-list-alt">
+                                <field name="sprint_count" string="Sprint" widget="statinfo" />
+                            </button>
+                        </div>
+                        <div>
+                            <button name="open_task" type="object" class="oe_stat_button" icon="fa-list-alt">
+                                <field name="task_count" string="Tasks" widget="statinfo" />
+                            </button>
+                        </div>
                     </div>
                     <group>
                         <group>
@@ -42,7 +49,7 @@
                                 </tree>
                             </field>
                         </page>
-                        <page string="Sprint">
+                        <!-- <page string="Sprint">
                             <field name="project_sprint_ids" widget="many2many">
                                 <tree>
                                     <field name="name" />
@@ -52,7 +59,9 @@
                                     <field name="start_date" />
                                 </tree>
                             </field>
-                        </page>
+                        </page> -->
+                        <!-- <page string="Task">
+                        </page> -->
                     </notebook>
                 </sheet>
             </form>
@@ -372,14 +381,24 @@
             </tree>
         </field>
     </record>
+    <!-- pivot view of the Sprint model -->
+    <record id="sprint_sprint_view_pivot" model="ir.ui.view">
+        <field name="name">sprint.sprint.view.pivot</field>
+        <field name="model">sprint.sprint</field>
+        <field name="arch" type="xml">
+            <pivot string="Sprint" disable_linking="true">
+                <field name="name" type="row" />
+                <field name="state" type="col" />
+            </pivot>
+        </field>
+    </record>
     <!-- graph view of the Sprint model -->
     <record id="sprint_sprint_view_graph" model="ir.ui.view">
         <field name="name">sprint.sprint.view.graph</field>
         <field name="model">sprint.sprint</field>
         <field name="arch" type="xml">
-            <graph string="Sprint Graph" type="pie">
-                <field name="user_sprint_id" />
-                <field name="state" type="measure"/>
+            <graph string="Sprint Graph">
+                <field name="state" />
             </graph>
         </field>
     </record>
@@ -456,7 +475,8 @@
                             <field name="state" />
                         </group>
                         <group>
-                            <field name="backlog_id" />
+                            <field name="user_id" />
+                            <field name="backlog_id" options="{'no_open':True}" readonly="1" />
                         </group>
                     </group>
                 </sheet>
@@ -472,6 +492,7 @@
                 <field name="name" />
                 <field name="state" />
                 <field name="backlog_id" />
+                <field name="user_id" />
             </tree>
         </field>
     </record>
@@ -511,7 +532,7 @@
         <field name="model">scrum.task</field>
         <field name="arch" type="xml">
             <search string="Search Scrum Task">
-                <filter string="Chưa có Product Backlog" name="backlog_id" domain="[('backlog_id','=',False)]" />
+                <filter string="Task của tôi" name="user_id" domain="[('user_id.user_id','=',uid)]"/>
             </search>
         </field>
     </record>
@@ -522,7 +543,8 @@
         <field name="view_type">form</field>
         <field name="view_mode">tree,kanban,form</field>
         <field name="domain"></field>
-        <field name="context">{'active_id':1}</field>
+        <field name="context">{'active_id':1,'search_default_user_id':1}</field>
+        <!-- <field name="context">{"search_default_'t_workflow'":1}</field> -->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Mời bạn tạo Task
