@@ -31,6 +31,7 @@
         'wizards/scrum_wizard.xml',
         'views/scrum.xml',
         'views/sequence.xml',
+        'views/inherit-project.xml',
         'reports/report.xml',
         'reports/scrum_project.xml',
     ],

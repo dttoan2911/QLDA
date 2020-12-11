@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- kanban view of the Inherit Project Project model -->
+    <record id="project_project_view_kanban" model="ir.ui.view">
+        <field name="name">project.project.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban" />
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="rating_status" position="after">
+                <!-- <field name="sprint_count" /> -->
+            </field>
+            <xpath expr="//a[hasclass('o_project_kanban_box')]" position="before">
+                <a class="o_project_kanban_box" name="127" type="action">
+                    <div>
+                        <span class="o_value">
+                            <!-- <t t-esc="record.sprint_count.value" /> -->
+                        </span>
+                        <span class="o_label">Sprints</span>
+                    </div>
+                </a>
+            </xpath>
+            <!-- KIẾN THỨC KẾ THỪA VIEW
+            C1: Tìm đến thẻ trong view để kế thừa
+            <xpath expr="//field[@name='partner_id']" position="after"></xpath>
+            C2: Tìm name của field trong view để kế thừa
+            <field name="partner_id" position="after">
+                <field name="item_name" />
+            </field> -->
+        </field>
+    </record>
+
+    <!-- form view of the Inherit Project Project model -->
+    <record id="project_project_view_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.view.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_scrum" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- action of the Inherit Project Menu -->
+    <record id="action_project_project" model="ir.actions.act_window">
+        <field name="name">Project</field>
+        <field name="res_model">project.project</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+                (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_project_view_kanban')}),
+            ]" />
+        <field name="domain">[('is_scrum', '=', True)]</field>
+        <!-- <field name="context">{'default_is_scrum': True}</field> -->
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Mời bạn tạo Project
+            </p>
+        </field>
+    </record>
+
+    <!-- action of the Inherit Project Task  Menu -->
+    <record id="action_project_task" model="ir.actions.act_window">
+        <field name="name">Project Task</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                    Mời bạn tạo Project Task
+                </p>
+        </field>
+    </record>
+
+    <!-- action of the Inherit Project Team  Menu -->
+    <record id="action_project_team" model="ir.actions.act_window">
+        <field name="name">Project Team</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Mời bạn tạo thành viên
+            </p>
+        </field>
+    </record>
+
+    <!-- Create Inherit Project Menu -->
+    <menuitem id="scrum_project_project_view_menu" name="Project" parent="main_menu" action="action_project_project" sequence="7" />
+    <!-- Create Inherit Project Task Menu -->
+    <menuitem id="scrum_project_task_view_menu" name="Project Task" parent="main_menu" action="action_project_task" sequence="8" />
+    <!-- Create Inherit Project Team Menu -->
+    <menuitem id="scrum_project_team_view_menu" name="Project Team" parent="main_menu" action="action_project_team" sequence="9" />
+</odoo>

@@ -96,8 +96,14 @@
                                 </strong>
                                 <div class="o_kanban_tags_section" />
                                 <ul>
-                                    <li>Product Backlog: <field name="project_backlog_ids" /></li>
-                                    <li>Sprint: <field name="project_sprint_ids" /></li>
+                                    <li>
+                                        Product Backlog:
+                                        <field name="project_backlog_ids" />
+                                    </li>
+                                    <li>
+                                        Sprint:
+                                        <field name="project_sprint_ids" />
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -237,11 +243,11 @@
         <field name="name">product.backlog.view.kanban</field>
         <field name="model">product.backlog</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" quick_create="false" class="o_kanban_small_column" >
+            <kanban default_group_by="state" quick_create="false" class="o_kanban_small_column">
                 <field name="id" />
                 <field name="name" />
                 <field name="state" />
-                <progressbar field="state" sum_field="planned_revenue" colors='{"done":"success","confirm":"muted"}'/>
+                <progressbar field="state" sum_field="planned_revenue" colors='{"done":"success","confirm":"muted"}' />
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
@@ -251,7 +257,10 @@
                                 </strong>
                                 <div class="o_kanban_tags_section" />
                                 <ul>
-                                    <li>Trạng thái: <field name="state" /></li>
+                                    <li>
+                                        Trạng thái:
+                                        <field name="state" />
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -503,12 +512,12 @@
         <field name="name">scrum.task.view.kanban</field>
         <field name="model">scrum.task</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" quick_create="false" class="o_kanban_small_column" >
+            <kanban default_group_by="state" quick_create="false" class="o_kanban_small_column">
                 <field name="id" />
                 <field name="name" />
                 <field name="state" />
                 <field name="backlog_id" />
-                <progressbar field="state" sum_field="planned_revenue" colors='{"done":"success","inprogress":"muted"}'/>
+                <progressbar field="state" sum_field="planned_revenue" colors='{"done":"success","inprogress":"muted"}' />
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
@@ -518,8 +527,14 @@
                                 </strong>
                                 <div class="o_kanban_tags_section" />
                                 <ul>
-                                    <li>Trạng thái: <field name="state" /></li>
-                                    <li>Product Backlog: <field name="backlog_id" /></li>
+                                    <li>
+                                        Trạng thái:
+                                        <field name="state" />
+                                    </li>
+                                    <li>
+                                        Product Backlog:
+                                        <field name="backlog_id" />
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -534,7 +549,7 @@
         <field name="model">scrum.task</field>
         <field name="arch" type="xml">
             <search string="Search Scrum Task">
-                <filter string="Task của tôi" name="user_id" domain="[('user_id.user_id','=',uid)]"/>
+                <filter string="Task của tôi" name="user_id" domain="[('user_id.user_id','=',uid)]" />
             </search>
         </field>
     </record>
@@ -553,6 +568,7 @@
             </p>
         </field>
     </record>
+
     <!-- Main Menu -->
     <menuitem id="main_menu" name="Ứng dụng Quản trị Dự án" sequence="0" web_icon="scrum,static/src/img/scrum.png" />
     <!-- Scrum Project Menu -->

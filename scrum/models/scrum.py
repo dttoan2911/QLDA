@@ -150,13 +150,6 @@ class ProductBacklog(models.Model):
     def sprint_check(self):
         if self._origin.sprint_id.state == 'start':
             raise UserError("%s đã ở trạng thái start, không thể thay đổi" %(str(self._origin.sprint_id.name)))
-    # Phương thức kiểm tra không được xóa PB đang nằm trong sprint ở trạng thái start
-    def unlink(self):
-        for rec in self:
-            for sprint in rec.sprint_id:
-                if sprint.state =='start':
-                    raise UserError(_("Bạn không được phép xóa Backlog này vì nó đang nằm trong Sprint đã start"))
-            return super(ProductBacklog, self).unlink()
     # Thuộc tính bảng Product Backlog
     name = fields.Char(string="Số thứ tự",required=True,copy=False,readonly=True,index=True,default=lambda self:_('New'))
     name_backlog = fields.Char(string="Tên Product Backlog",required=True)
@@ -221,8 +214,8 @@ class Sprint(models.Model):
             flag = sprint.end_date - sprint.start_date
             if(flag.days<0):
                 raise ValidationError(_('Ngày kết thúc không được nhỏ hơn ngày bắt đầu'))
-            elif(flag.days>35):
-                raise ValidationError(_('Thời hạn sprint không được vượt quá 5 tuần'))
+            elif(flag.days>28):
+                raise ValidationError(_('Thời hạn sprint không được vượt quá 4 tuần'))
     # Phương thức chuyển đổi trạng thái thành start
     def action_start_sprint(self):
         count = self.env['product.backlog'].search_count([('sprint_id','=',self.id)])
@@ -262,12 +255,6 @@ class Sprint(models.Model):
             if rec.state == 'start':
                 raise UserError(_("Bạn không được phép xóa Sprint này vì đang ở trạng thái 'Start'"))
         return super(Sprint, self).unlink()
-    # Phương thức kiểm tra không cho xóa pb khi sprint đang ở trạng thái start
-    @api.onchange('sprint_backlog_ids')
-    def sprint_pb_check(self):
-        if self.state == 'start' and self._origin.sprint_backlog_ids:
-            if self.sprint_backlog_ids != self._origin.sprint_backlog_ids:
-                raise UserError(_("Bạn không được phép xóa Backlog này vì Sprint đang ở trạng thái 'Start'"))
     # Phương thức chỉ lấy các Product Backlog thuộc cùng một Project với Sprint
     @api.onchange('project_id')
     def onchange_project_id(self):
@@ -326,3 +313,21 @@ class Task(models.Model):
     #     return self.env['scrum.project'].search([], limit=1)
     # project_id = fields.Many2one('scrum.project',string="Project",default=_default_project_id)
     project_id = fields.Many2one('scrum.project',string="Project")
+
+#Version Kế thừa Project, Task, Team
+class KeThuaProject(models.Model):
+    _inherit = 'project.project'
+    
+    # Phương thức đếm tất cả Sprint trong một Project
+    def get_sprint_count(self):
+        count = self.env['sprint.sprint'].search_count([('project_id','=',self.id)])
+        self.sprint_count = count
+
+    # Thuộc tính mới kế thừa Module Project
+    is_scrum = fields.Boolean(string="Template Scrum",default=True)
+    # Thuộc tính đếm tất cả Sprint trong một Project
+    sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
+class KeThuaTask(models.Model):
+    _inherit = 'project.task'
+class KeThuaTeam(models.Model):
+    _inherit = 'res.users'
