@@ -178,7 +178,7 @@
                         </group>
                         <group>
                             <field name="sprint_id" />
-                            <field name="project_id" />
+                            <field name="inherit_project_id"/>
                         </group>
                     </group>
                     <notebook>

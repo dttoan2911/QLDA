@@ -171,8 +171,10 @@ class ProductBacklog(models.Model):
     sprint_id = fields.Many2one('sprint.sprint',string="Sprint ID",ondelete="set null")
     # Quan hệ cha con với bảng Scrum Task: Một Product Backlog có ít nhất 0 hoặc nhiều Task
     task_id = fields.One2many('scrum.task','backlog_id',string="Task ID")
+    inherit_task_id = fields.One2many('project.task','product_backlog_id',string="Task ID")
     # Quan hệ một một với bảng Scrum Project: Một Product Backlog chỉ được nằm trong một Scrum Project
     project_id = fields.Many2one('scrum.project',string="Tên Dự Án")
+    inherit_project_id = fields.Many2one('project.project',string="Tên Dự Án")
 class Sprint(models.Model):
     _name = 'sprint.sprint'
     _description = "Sprint"
@@ -281,6 +283,7 @@ class Sprint(models.Model):
     user_sprint_id = fields.Many2one('scrum.team',string="Người tạo")
     # Quan hệ cha con với bảng Project
     project_id = fields.Many2one('scrum.project',string="Dự Án")
+    inherit_project_id = fields.Many2one('project.project',string="Dự Án")
 class ScrumTeam(models.Model):
     _name='scrum.team'
     _inherit = ['mail.thread','mail.activity.mixin']
@@ -317,17 +320,46 @@ class Task(models.Model):
 #Version Kế thừa Project, Task, Team
 class KeThuaProject(models.Model):
     _inherit = 'project.project'
-    
     # Phương thức đếm tất cả Sprint trong một Project
     def get_sprint_count(self):
-        count = self.env['sprint.sprint'].search_count([('project_id','=',self.id)])
+        count = self.env['sprint.sprint'].search_count([('inherit_project_id','=',self.id)])
         self.sprint_count = count
-
+    # Phương thức trỏ đến các Sprint của một Project
+    def open_sprint(self):
+        return{
+            'name': _('Sprint'),
+            'domain': [('inherit_project_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'sprint.sprint',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
+    # Phương thức đếm các Product Backlog
+    def get_product_backlog_count(self):
+        count = self.env['product.backlog'].search_count([('inherit_project_id','=',self.id)])
+        self.product_backlog_count = count
+    # Phương thức trỏ đến các Product Backlog của một Project
+    def open_product_backlog(self):
+        return{
+            'name': _('Product Backlog'),
+            'domain': [('inherit_project_id','=',self.id)],
+            'view_type': 'form',
+            'res_model': 'product.backlog',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
     # Thuộc tính mới kế thừa Module Project
     is_scrum = fields.Boolean(string="Template Scrum",default=True)
     # Thuộc tính đếm tất cả Sprint trong một Project
     sprint_count = fields.Integer(string="Sprint Count",compute='get_sprint_count')
+    # Thuộc tính đếm các Product Backlog
+    product_backlog_count = fields.Integer(string="Product Backlog Count",compute='get_product_backlog_count')
 class KeThuaTask(models.Model):
     _inherit = 'project.task'
+
+    # Quan hệ cha con với bảng Product Backlog: Một Task chỉ được nằm trong một Product Backlog
+    product_backlog_id = fields.Many2one('product.backlog',string="Product Backlog ID")
 class KeThuaTeam(models.Model):
     _inherit = 'res.users'

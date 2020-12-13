@@ -26,13 +26,30 @@
         <field name="target">new</field>
     </record>
     <!-- form view of the Create Product Backlog model  -->
-    <record id="create_product_backlog_form" model="ir.ui.view">
+    <!-- <record id="create_product_backlog_form" model="ir.ui.view">
         <field name="name">create.product.backlog.wizards</field>
         <field name="model">create.product.backlog</field>
         <field name="arch" type="xml">
             <form string="Create Product Backlog">
                 <group>
                     <field name="project_id" options="{'no_open':True}" readonly="1" />
+                    <field name="name_backlog" />
+                </group>
+                <footer>
+                    <button name="create_product_backlog" string="Create" type="object" class="btn-primary" />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record> -->
+    <!-- form view of the Create Product Backlog model  -->
+    <record id="create_product_backlog_form" model="ir.ui.view">
+        <field name="name">create.product.backlog.wizards</field>
+        <field name="model">create.product.backlog</field>
+        <field name="arch" type="xml">
+            <form string="Create Product Backlog">
+                <group>
+                    <field name="inherit_project_id" options="{'no_open':True}" readonly="1" />
                     <field name="name_backlog" />
                 </group>
                 <footer>
@@ -51,14 +68,14 @@
         <field name="view_id" ref="create_product_backlog_form" />
         <field name="target">new</field>
     </record>
-    <!-- form view of the Create Sprint model  -->
-    <record id="create_sprint_form" model="ir.ui.view">
+    <!-- form view of the Create Sprint Inherit Project model  -->
+    <record id="create_sprint_project_form" model="ir.ui.view">
         <field name="name">create.sprint.wizards</field>
         <field name="model">create.sprint</field>
         <field name="arch" type="xml">
             <form string="Create Sprint">
                 <group>
-                    <field name="project_id" options="{'no_open':True}" readonly="1" />
+                    <field name="inherit_project_id" options="{'no_open':True}" readonly="1" />
                     <field name="sprint_backlog_ids" widget="many2many">
                         <tree>
                             <field name="name" />
@@ -69,7 +86,7 @@
                     </field>
                 </group>
                 <footer>
-                    <button name="create_sprint" string="Create" type="object" class="btn-primary" />
+                    <button name="create_sprint_project" string="Create" type="object" class="btn-primary" />
                     <button string="Cancel" class="btn-secondary" special="cancel" />
                 </footer>
             </form>
@@ -81,7 +98,7 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">create.sprint</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="create_sprint_form" />
+        <field name="view_id" ref="create_sprint_project_form" />
         <field name="target">new</field>
     </record>
 </odoo>
