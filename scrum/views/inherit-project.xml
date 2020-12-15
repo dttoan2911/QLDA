@@ -48,63 +48,49 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project" />
         <field name="arch" type="xml">
-            <xpath expr="//button[hasclass('oe_read_only')]" position="after">
-                <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_inherit_project_id':active_id}" groups="scrum.group_scrum_product_owner" />
-                <button name="%(scrum.create_sprint_wizard)d" string="Create Sprint" type="action" class="oe_highlight" context="{'default_inherit_project_id':active_id}" />
+            <xpath expr="//page[@name='settings']" position="after">
+                <page name="scrum" string="Scrum">
+                    <group>
+                        <field name="is_scrum" />
+                    </group>
+                </page>
             </xpath>
-            <xpath expr="//button[hasclass('oe_stat_button')]" position="after">
-                <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt">
-                    <field name="product_backlog_count" string="Product Backlog" widget="statinfo" />
+            <xpath expr="//button[@name='116']" position="after">
+                <button name="%(scrum.create_product_backlog_wizard)d" string="Create Product Backlog" type="action" class="oe_highlight" context="{'default_inherit_project_id':active_id}" groups="scrum.group_scrum_product_owner" attrs="{'invisible':[('is_scrum','!=',True)]}" />
+                <button name="%(scrum.create_sprint_wizard)d" string="Create Sprint" type="action" class="oe_highlight" context="{'default_inherit_project_id':active_id}" attrs="{'invisible':[('is_scrum','!=',True)]}" />
+            </xpath>
+            <xpath expr="//button[@name='toggle_active']" position="after">
+                <button name="open_product_backlog" type="object" class="oe_stat_button" icon="fa-list-alt" attrs="{'invisible':[('is_scrum','!=',True)]}">
+                    <field name="product_backlog_count" string="Product Backlog" widget="statinfo"/>
                 </button>
-                <button name="open_sprint" type="object" class="oe_stat_button" icon="fa-list-alt">
+                <button name="open_sprint" type="object" class="oe_stat_button" icon="fa-list-alt" attrs="{'invisible':[('is_scrum','!=',True)]}">
                     <field name="sprint_count" string="Sprint" widget="statinfo" />
                 </button>
+                <!-- <button name="open_task" type="object" class="oe_stat_button" icon="fa-list-alt">
+                    <field name="task_count" string="Task" widget="statinfo" />
+                </button> -->
             </xpath>
         </field>
     </record>
-
+    
     <!-- action of the Inherit Project Menu -->
     <record id="action_project_project" model="ir.actions.act_window">
         <field name="name">Project</field>
         <field name="res_model">project.project</field>
         <field name="view_type">form</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
         <field name="view_ids" eval="[(5,0,0),
                 (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_project_view_kanban')}),
             ]" />
-        <field name="domain">[('is_scrum', '=', True)]</field>
-        <!-- <field name="context">{'default_is_scrum': True}</field> -->
+        <field name="domain">[('is_scrum','=',True)]</field>
+        <field name="context">{'active_id':1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Mời bạn tạo Project
             </p>
         </field>
     </record>
-
-    <!-- form view of the Inherit Project Task model -->
-    <!-- <record id="project_task_view_form_inherit" model="ir.ui.view">
-        <field name="name">project.task.view.form.inherit</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.view_task_form2" />
-        <field name="arch" type="xml">
-            <field name="user_id" position="after">
-                <field name="product_backlog_id" />
-            </field>
-        </field>
-    </record> -->
-
-    <!-- action of the Inherit Project Task  Menu -->
-    <record id="action_project_task" model="ir.actions.act_window">
-        <field name="name">Project Task</field>
-        <field name="res_model">project.task</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                    Mời bạn tạo Project Task
-                </p>
-        </field>
-    </record>
-
+    
     <!-- action of the Inherit Project Team  Menu -->
     <record id="action_project_team" model="ir.actions.act_window">
         <field name="name">Project Team</field>
@@ -119,8 +105,6 @@
 
     <!-- Create Inherit Project Menu -->
     <menuitem id="scrum_project_project_view_menu" name="Project" parent="main_menu" action="action_project_project" sequence="7" />
-    <!-- Create Inherit Project Task Menu -->
-    <menuitem id="scrum_project_task_view_menu" name="Project Task" parent="main_menu" action="action_project_task" sequence="8" />
     <!-- Create Inherit Project Team Menu -->
-    <menuitem id="scrum_project_team_view_menu" name="Project Team" parent="main_menu" action="action_project_team" sequence="9" />
+    <menuitem id="scrum_project_team_view_menu" name="Project Team" parent="main_menu" action="action_project_team" sequence="8" />
 </odoo>
